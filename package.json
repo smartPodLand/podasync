@@ -1,6 +1,6 @@
 {
   "name": "podchat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fanap's POD chat service",
   "main": "index.js",
   "scripts": {
