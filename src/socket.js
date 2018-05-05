@@ -20,12 +20,12 @@
       eventCallback = {},
       socket,
       waitForSocketToConnectTimeoutId,
-      wsConnectionWaitTime = params.wsConnectionWaitTime,
+      wsConnectionWaitTime = params.wsConnectionWaitTime || 500,
       lastMessageTime,
       lastMessageTimeoutId,
       lastPingTimeoutId,
-      connectionCheckTimeout = params.connectionCheckTimeout,
-      connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold,
+      connectionCheckTimeout = params.connectionCheckTimeout || 10000,
+      connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold || 400,
       pingTimeCheck = connectionCheckTimeout - connectionCheckTimeoutThreshold;
 
     /*******************************************************

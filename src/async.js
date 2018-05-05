@@ -48,9 +48,9 @@
       oldPeerId,
       peerId = params.peerId,
       lastMessageId = 1,
-      messageTtl = params.messageTtl,
+      messageTtl = params.messageTtl || 5000,
       serverName = params.serverName || "oauth-wire",
-      connectionRetryInterval = params.connectionRetryInterval;
+      connectionRetryInterval = params.connectionRetryInterval || 5000;
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *

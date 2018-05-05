@@ -5,15 +5,47 @@
 ## Code Example
 
 ```javascript
-const Chat = require('podchat');
+var Async = require('./src/async.js');
 
-const options = {
-	interval : 10000,
-	retries : 10
+/**
+* socketAddress: Socket Server Address
+* serverName: Chat Server Name
+*/
+var params = {
+  socketAddress: "ws://172.16.110.235:8003/ws",
+  serverName: "oauth-wire"
 };
 
-Chat(options);
+var asyncClient = new Async(params);
 
+/**
+* Write your code inside asyncReady() function
+*/
+asyncClient.asyncReady(function() {
+
+	/**
+	* A Custom Message To be Send Through DIRANA
+	*/
+  var customMessage = {
+    type: 3,
+    content: {
+      receivers: ["receiver1", "receiver2", "..."],
+      content: "Hello Buddy!"
+    }
+  };
+
+	/**
+	* Sending Message
+	*/
+  asyncClient.emit(customMessage);
+
+	/**
+	* Listening to responses came from DIRANA
+	*/
+  asyncClient.on("message", function(msg, ack) {
+    console.log(msg);
+  });
+});
 ```
 
 ## Motivation
