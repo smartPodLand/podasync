@@ -1,7 +1,7 @@
 {
-  "name": "podchat",
-  "version": "1.1.1",
-  "description": "Fanap's POD chat service",
+  "name": "podAsync",
+  "version": "1.0.1",
+  "description": "Fanap's POD Async service (DIRANA)",
   "main": "./src/async.js",
   "scripts": {
     "test": "mocha --reporter spec"
@@ -13,8 +13,8 @@
   "keywords": [
     "Fanap",
     "POD",
-    "chat",
-    "masoudmanson"
+    "Async",
+    "DIRANA"
   ],
   "engines": {
     "node": ">=4.2.4"
