@@ -2,7 +2,7 @@
   "name": "podchat",
   "version": "1.0.1",
   "description": "Fanap's POD chat service",
-  "main": "index.js",
+  "main": "./src/async.js",
   "scripts": {
     "test": "mocha --reporter spec"
   },
