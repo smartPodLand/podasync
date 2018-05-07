@@ -1,6 +1,6 @@
 {
   "name": "podchat",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Fanap's POD chat service",
   "main": "./src/async.js",
   "scripts": {
