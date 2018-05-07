@@ -7,7 +7,7 @@
 Create an Javascript file e.x `index.js` and put following code in it:
 
 ```javascript
-var Async = require('podchat');
+var Async = require('podasync');
 
 /**
 * socketAddress: Socket Server Address

@@ -1,6 +1,6 @@
 {
-  "name": "podAsync",
-  "version": "1.0.2",
+  "name": "podasync",
+  "version": "1.0.1",
   "description": "Fanap's POD Async service (DIRANA)",
   "main": "./src/async.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/masoudmanson/pod-chat.git"
+    "url": "git+https://github.com/masoudmanson/pod-async.git"
   },
   "keywords": [
     "Fanap",
@@ -22,9 +22,9 @@
   "author": "Masoud Amjadi <masoudmanson@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/masoudmanson/pod-chat/issues"
+    "url": "https://github.com/masoudmanson/pod-async/issues"
   },
-  "homepage": "https://github.com/masoudmanson/pod-chat#readme",
+  "homepage": "https://github.com/masoudmanson/pod-async#readme",
   "dependencies": {
     "ws": "^4.1.0"
   },
