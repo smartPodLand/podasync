@@ -1,6 +1,6 @@
 ## Synopsis
 
-**Fanap's POD** chat service
+**Fanap's POD** Async service (DIRANA)
 
 ## Code Example
 
