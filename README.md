@@ -4,6 +4,8 @@
 
 ## Code Example
 
+Create an Javascript file e.x `index.js` and put following code in it:
+
 ```javascript
 var Async = require('./src/async.js');
 
@@ -46,6 +48,12 @@ asyncClient.asyncReady(function() {
     console.log(msg);
   });
 });
+```
+To execute your code simple run following command in command License
+
+```
+cd /root_of_your_project
+node index.js
 ```
 
 ## Motivation

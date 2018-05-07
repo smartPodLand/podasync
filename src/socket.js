@@ -73,6 +73,7 @@
             eventCallback["error"](event);
           }
         } catch (error) {
+          eventCallback["error"](event);
           console.log("Socket Module Catch Error => ", error);
         }
       },
@@ -84,7 +85,7 @@
           let currentDate = new Date();
 
           if (currentDate - lastMessageTime >= connectionCheckTimeout + connectionCheckTimeoutThreshold) {
-            socket.close(4002);
+            socket.close();
           }
         }, connectionCheckTimeout);
       },
@@ -133,19 +134,19 @@
     }
 
     this.disconnect = function() {
-      socket.close(4003);
+      socket.close();
     }
 
     this.close = function() {
       lastMessageTimeoutId && clearTimeout(lastMessageTimeoutId);
       lastPingTimeoutId && clearTimeout(lastPingTimeoutId);
-      socket.close(4002);
+      socket.close();
     }
 
     this.logout = function() {
       lastMessageTimeoutId && clearTimeout(lastMessageTimeoutId);
       lastPingTimeoutId && clearTimeout(lastPingTimeoutId);
-      socket.close(4001);
+      socket.close();
     }
 
     init();

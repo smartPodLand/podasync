@@ -83,58 +83,20 @@
 
         socket = new PodSocketClass(params);
 
-        socket.on("message", function(params) {
-          handleSocketMessage(params);
-        });
-
         socket.on("open", function() {
           isSocketOpen = true;
           registerDevice();
+        });
+
+        socket.on("message", function(params) {
+          handleSocketMessage(params);
         });
 
         socket.on("close", function(event) {
           isSocketOpen = false;
           isDeviceRegister = false;
           oldPeerId = peerId;
-
-          // if (connectionState) {
           connectionState = false;
-          // peerId = undefined;
-
-          /**
-             *  Firing Disconnect Event From Outer Class
-             *  Will be used in chatClass
-             */
-          // fireEvent("disconnect", event);
-          // }
-
-          if (event) {
-            switch (event.code) {
-             /**
-              * User Logout
-              */
-              case 4001:
-                peerId = undefined;
-                deviceId = undefined;
-                isServerRegister = false;
-                break;
-
-             /**
-              * Socket Closed by User
-              */
-              case 4002:
-                break;
-
-             /**
-              * Socket Closed on its own
-              */
-              case 4106:
-                break;
-
-              default:
-                break;
-            }
-          }
 
           setTimeout(function() {
             setTimeout(function() {
@@ -143,7 +105,7 @@
               }
             }, 60000);
             socket.connect();
-          }, 1000);
+          }, 15000);
         });
 
         socket.on("error", function(error) {
@@ -205,7 +167,8 @@
           deviceId: deviceId
         };
 
-        if (peerId !== undefined && typeof peerId === "number") {
+        if (peerId !== undefined) {
+          console.log("Here :|");
           content.refresh = true;
         } else {
           if (!isRetry) {
@@ -268,8 +231,8 @@
             clearTimeout(registerServerTimeoutId);
           }
           connectionState = true;
-
-          pushSendDataQueueHandler();
+          pushSendDataQueue = [];
+          // pushSendDataQueueHandler();
           /**
            * Handle Sending Message from outer class
            */
@@ -340,7 +303,24 @@
       }
     }
 
-    this.emit = function(params, callback) {
+    this.asyncReady = function(callback) {
+      if (asyncReadyTimeoutId)
+        clearTimeout(asyncReadyTimeoutId);
+
+      if (connectionState) {
+        callback();
+      } else {
+        asyncReadyTimeoutId = setTimeout(function() {
+          if (connectionState) {
+            callback();
+          } else {
+            this.asyncReady(callback);
+          }
+        }, 1000);
+      }
+    }
+
+    this.send = function(params, callback) {
       /*
        *  TYPE 3 => Message
        *  TYPE 4 => Message ACK Needed
@@ -373,23 +353,6 @@
       pushSendData(socketData);
     }
 
-    this.asyncReady = function(callback) {
-      if (asyncReadyTimeoutId)
-        clearTimeout(asyncReadyTimeoutId);
-
-      if (connectionState) {
-        callback();
-      } else {
-        asyncReadyTimeoutId = setTimeout(function() {
-          if (connectionState) {
-            callback();
-          } else {
-            this.asyncReady(callback);
-          }
-        }, 1000);
-      }
-    }
-
     this.getSocketConnectionState = function() {
       return connectionState;
     }
@@ -416,6 +379,7 @@
       isDeviceRegister = false;
       isSocketOpen = false;
       connectionState = false;
+      pushSendDataQueue = [];
       clearTimeouts();
       socket.logout();
     }

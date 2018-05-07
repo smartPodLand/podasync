@@ -19,14 +19,14 @@ asyncClient.asyncReady(function() {
   var newCustomMessage2 = {
     type: 3,
     content: {
-      receivers: [2707518],
+      receivers: [2716132],
       content: "Hello"
     }
   };
 
   var m1 = setInterval(function() {
-    asyncClient.emit(newCustomMessage2);
-  }, 4000);
+    asyncClient.send(newCustomMessage2);
+  }, 3000);
 
   asyncClient.on("message", function(msg, ack) {
     console.log("> ::::: Recievied msg to asyncClient\n");
@@ -38,6 +38,6 @@ asyncClient.asyncReady(function() {
   */
   setTimeout(function() {
     console.log("\n:::::::::::::: L O G G I N G :::: O U T ::::::::::::::::::::\n");
-    asyncClient.logout();
-  }, 30000);
+    asyncClient.close();
+  }, 20000);
 });
