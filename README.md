@@ -7,7 +7,7 @@
 Create an Javascript file e.x `index.js` and put following code in it:
 
 ```javascript
-var Async = require('./src/async.js');
+var Async = require('podchat');
 
 /**
 * socketAddress: Socket Server Address
@@ -39,7 +39,7 @@ asyncClient.asyncReady(function() {
 	/**
 	* Sending Message
 	*/
-  asyncClient.emit(customMessage);
+  asyncClient.send(customMessage);
 
 	/**
 	* Listening to responses came from DIRANA
@@ -49,7 +49,7 @@ asyncClient.asyncReady(function() {
   });
 });
 ```
-To execute your code simple run following command in command License
+To execute your code simple run following command in command line
 
 ```
 cd /root_of_your_project
@@ -64,7 +64,6 @@ This module helps you to easily connect POD chat service.
 
 ```javascript
 npm install podchat --save
-npm install
 ```
 
 ## API Reference
