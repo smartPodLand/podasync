@@ -1,7 +1,6 @@
 (function() {
   /*
    * Async module to handle async messaging
-   * @constructor
    * @module Async
    *
    * @param {Object} params
@@ -21,37 +20,73 @@
       PodSocketClass = POD.Socket;
     }
 
+    var asyncMessageType = {
+      PING: 0,
+      SERVER_REGISTER: 1,
+      DEVICE_REGISTER: 2,
+      MESSAGE: 3,
+      MESSAGE_ACK_NEEDED: 4,
+      MESSAGE_SENDER_ACK_NEEDED: 5,
+      ACK: 6,
+      GET_REGISTERED_PEERS: 7,
+      PEER_REMOVED: -3,
+      REGISTER_QUEUE: -2,
+      NOT_REGISTERED: -1,
+      ERROR_MESSAGE: -99
+    };
+
+    var asyncStateType = {
+      CONNECTING: 0, // The connection is not yet open.
+      OPEN: 1, // The connection is open and ready to communicate.
+      CLOSING: 2, // The connection is in the process of closing.
+      CLOSED: 3 // The connection is closed or couldn't be opened.
+    };
+
     var appId = params.appId || "POD-Chat",
-      deviceId,
+      deviceId = (params.deviceId)
+        ? params.deviceId
+        : undefined,
       address = params.socketAddress,
       eventCallbacks = {
         connect: {},
         disconnect: {},
         reconnect: {},
         message: {},
-        asyncReady: {}
+        asyncReady: {},
+        stateChange: {}
       },
-      ackCallback = {
-        /**
-         * MessageId
-         */
-      },
+      ackCallback = {},
       socket,
       isSocketOpen = false,
       isDeviceRegister = false,
       isServerRegister = false,
       connectionState = false,
+      asyncState = asyncStateType.CONNECTING,
       registerServerTimeoutId,
       registerDeviceTimeoutId,
       asyncReadyTimeoutId,
       pushSendDataQueue = [],
       oldPeerId,
       peerId = params.peerId,
-      lastMessageId = 1,
+      lastMessageId = 0,
       messageTtl = params.messageTtl || 5000,
       serverName = params.serverName || "oauth-wire",
-      connectionRetryInterval = params.connectionRetryInterval || 5000;
-
+      connectionRetryInterval = params.connectionRetryInterval || 5000,
+      socketReconnectRetryInterval,
+      socketReconnectCheck,
+      retryStep = 1,
+      reconnectOnClose = (typeof params.reconnectOnClose === "boolean")
+        ? params.reconnectOnClose
+        : true,
+      consoleLogging = (params.consoleLogging && typeof params.consoleLogging.onFunction === "boolean")
+        ? params.consoleLogging.onFunction
+        : false,
+      onReceiveLogging = (params.consoleLogging && typeof params.consoleLogging.onMessageReceive === "boolean")
+        ? params.consoleLogging.onMessageReceive
+        : false,
+      onSendLogging = (params.consoleLogging && typeof params.consoleLogging.onMessageSend === "boolean")
+        ? params.consoleLogging.onMessageSend
+        : false;
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
      *******************************************************/
@@ -60,66 +95,143 @@
         initSocket();
       },
 
-      logger = function() {
-        console.log("\n################################################################");
-        console.log("################### S O C K E T   S T A T S ####################");
-        console.log("################################################################");
-        console.log("### Peer Id\t\t", peerId);
-        console.log("### Device Id\t\t", deviceId);
-        console.log("### is Socket Open\t", isSocketOpen);
-        console.log("### is Device Register\t", isDeviceRegister);
-        console.log("### is Server Register\t", isServerRegister);
-        console.log("### Connection State\t", connectionState);
-        console.log("### Send Queue\t\t", pushSendDataQueue);
-        console.log("################################################################\n");
+      logger = function(type, msg) {
+        var BgColor;
+
+        switch (type) {
+          case "Send":
+            BgColor = 44;
+            FgColor = 34;
+            break;
+
+          case "Receive":
+            BgColor = 45;
+            FgColor = 35;
+            break;
+
+          case "Error":
+            BgColor = 41;
+            FgColor = 31;
+            break;
+
+          default:
+            BgColor = 45;
+            break;
+        }
+
+        console.log("\n");
+        console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
+        console.log("\x1b[" + BgColor + "m\x1b[8m###################\x1b[0m\x1b[37m\x1b[" + BgColor + "mS O C K E T    S T A T U S\x1b[0m\x1b[" + BgColor + "m\x1b[8m###################\x1b[0m");
+        console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " PEER ID\t\t", peerId);
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE ID\t\t", deviceId);
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " IS SOCKET OPEN\t", isSocketOpen);
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE REGISTER\t", isDeviceRegister);
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " SERVER REGISTER\t", isServerRegister);
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " ASYNC STATE\t\t", asyncState);
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[" + FgColor + "m%s\x1b[0m ", " CURRENT MESSAGE\t", type);
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+
+        Object.keys(msg).forEach(function(key) {
+          if (typeof msg[key] === 'object') {
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m-\x1b[0m \x1b[35m%s\x1b[0m", key);
+            Object.keys(msg[key]).forEach(function(k) {
+              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t   \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", k, msg[key][k]);
+            });
+          } else {
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", key, msg[key]);
+          }
+        });
+
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+
+        if (pushSendDataQueue.length > 0) {
+          console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m", " SEND QUEUE");
+          console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+          Object.keys(pushSendDataQueue).forEach(function(key) {
+            if (typeof pushSendDataQueue[key] === 'object') {
+              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m-\x1b[0m \x1b[35m%s\x1b[0m", key);
+              Object.keys(pushSendDataQueue[key]).forEach(function(k) {
+                console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t   \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", k, pushSendDataQueue[key][k]);
+              });
+            } else {
+              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", key, pushSendDataQueue[key]);
+            }
+          });
+
+        } else {
+          console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m ", " SEND QUEUE\t\t", "Empty");
+        }
+
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+        console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
+        console.log("\n");
       },
 
       initSocket = function() {
         setTimeout(function() {
           if (!isSocketOpen) {
-            console.log(":::::::::::::: Error :: Can Not Open Socket!");
+            throw new Error("Can Not Open Socket!");
           }
-        }, 60000);
+        }, 65000);
 
         socket = new PodSocketClass(params);
 
         socket.on("open", function() {
           isSocketOpen = true;
-          registerDevice();
+          retryStep = 1;
         });
 
-        socket.on("message", function(params) {
-          handleSocketMessage(params);
-        });
+        socket.on("message", function(msg) {
+          handleSocketMessage(msg);
+          if (onReceiveLogging)
+            logger("Receive", msg);
+          }
+        );
 
         socket.on("close", function(event) {
           isSocketOpen = false;
           isDeviceRegister = false;
           oldPeerId = peerId;
-          connectionState = false;
+          asyncState = asyncStateType.CLOSED;
+          fireEvent("stateChange", asyncStateType.CLOSED);
 
-          setTimeout(function() {
-            setTimeout(function() {
-              if (!isSocketOpen) {
-                console.log("\n:::::::::::: Error :: Can Not Open Socket!");
-              }
-            }, 60000);
-            socket.connect();
-          }, 15000);
+          if (reconnectOnClose) {
+            socketReconnectRetryInterval = setTimeout(function() {
+              if (consoleLogging)
+                console.log("\x1b[46m\x1b[8m##\x1b[0m \x1b[36m%s\x1b[0m", " Reconnecting after " + retryStep + "s ...");
+              socket.connect();
+            }, 1000 * retryStep);
+            retryStep *= 2;
+
+            if (!socketReconnectCheck) {
+              socketReconnectCheck = setTimeout(function() {
+                if (!isSocketOpen) {
+                  socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
+                  socketReconnectCheck && clearTimeout(socketReconnectCheck);
+                  throw new Error("Can Not Open Socket!");
+                }
+              }, 65000);
+            }
+          } else {
+            throw new Error("Socket Closed!");
+          }
+
         });
 
         socket.on("error", function(error) {
-          console.log(error);
+          throw new Error(error);
         });
       },
 
       handleSocketMessage = function(msg) {
-        let ack;
+        var ack;
 
-        if (msg.type === 4 || msg.type === 5) {
+        if (msg.type === asyncMessageType.MESSAGE_ACK_NEEDED || msg.type === asyncMessageType.MESSAGE_SENDER_ACK_NEEDED) {
           ack = function() {
             pushSendData({
-              type: 6,
+              type: asyncMessageType.ACK,
               content: {
                 receivers: [msg.senderId],
                 messageId: msg.id
@@ -129,29 +241,30 @@
         }
 
         switch (msg.type) {
-          case 0:
-            if (msg.content && deviceId === undefined) {
-              deviceId = msg.content;
-              console.log("\n:::::::::::::: First Device ID => \t" + msg.content + "\n");
-            }
-            console.log(":::: PONG at \t" + new Date());
+          case asyncMessageType.PING:
+            handleDeviceIdMessage(msg);
             break;
 
-          case 1:
+          case asyncMessageType.SERVER_REGISTER:
             handleServerRegisterMessage(msg, ack);
             break;
 
-          case 2:
+          case asyncMessageType.DEVICE_REGISTER:
             handleDeviceRegisterMessage(msg.content);
             break;
 
-          case 3:
-          case 4:
-          case 5:
-            fireEvent("message", msg, ack);
+          case asyncMessageType.MESSAGE:
+            fireEvent("message", msg);
             break;
 
-          case 6:
+          case asyncMessageType.MESSAGE_ACK_NEEDED:
+          case asyncMessageType.MESSAGE_SENDER_ACK_NEEDED:
+            fireEvent("message", msg, ack);
+            ack();
+            break;
+
+          case asyncMessageType.ACK:
+            fireEvent("message", msg);
             if (ackCallback[msg.senderMessageId] == "function") {
               ackCallback[msg.senderMessageId]();
               delete ackCallback[msg.senderMessageId];
@@ -160,30 +273,44 @@
         }
       },
 
+      handleDeviceIdMessage = function(msg) {
+        if (msg.content) {
+          if (deviceId === undefined) {
+            deviceId = msg.content;
+            if (consoleLogging)
+              console.log("\x1b[46m\x1b[8m##\x1b[0m \x1b[36m%s\x1b[0m", " Device ID => \t" + msg.content);
+            }
+          } else {
+          if (consoleLogging)
+            console.log('\x1b[46m\x1b[8m##\x1b[0m \x1b[36m%s\x1b[0m', " Ping Response at  " + new Date());
+          }
+
+        if (deviceId) {
+          if (!isDeviceRegister)
+            registerDevice();
+          }
+        else {
+          var deviceIdTimeoutId = setTimeout(function() {
+            handleDeviceIdMessage();
+          }, 500);
+        }
+      },
+
       registerDevice = function(isRetry) {
-        console.log("\n:::::::::::::: Registering Device ...\n");
-        let content = {
+        if (consoleLogging)
+          console.log('\x1b[46m\x1b[8m##\x1b[0m \x1b[36m%s\x1b[0m', " Registering Device ...");
+        var content = {
           appId: appId,
           deviceId: deviceId
         };
 
         if (peerId !== undefined) {
-          console.log("Here :|");
           content.refresh = true;
         } else {
-          if (!isRetry) {
-            content.renew = true;
-          }
+          content.renew = true;
         }
 
-        socket.emit({type: 2, content: content});
-
-        registerDeviceTimeoutId = setTimeout(function() {
-          if (!isDeviceRegister) {
-            console.log("\n:::::::::::::: Device Register Failed, Retrying registration ...\n");
-            registerDevice(true);
-          }
-        }, connectionRetryInterval);
+        socket.emit({type: asyncMessageType.DEVICE_REGISTER, content: content});
       },
 
       handleDeviceRegisterMessage = function(recievedPeerId) {
@@ -199,7 +326,8 @@
         peerId = recievedPeerId;
 
         if (isServerRegister && peerId === oldPeerId) {
-          connectionState = true;
+          asyncState = asyncStateType.OPEN;
+          fireEvent("stateChange", asyncStateType.OPEN);
           isServerRegister = true;
           pushSendDataQueueHandler();
         } else {
@@ -208,17 +336,17 @@
       },
 
       registerServer = function() {
-        console.log("\n:::::::::::::: Registering Server ...\n");
+        if (consoleLogging)
+          console.log('\x1b[46m\x1b[8m##\x1b[0m \x1b[36m%s\x1b[0m', " Registering Server ...");
 
-        let content = {
+        var content = {
           name: serverName
         };
 
-        socket.emit({type: 1, content: content});
+        socket.emit({type: asyncMessageType.SERVER_REGISTER, content: content});
 
         registerServerTimeoutId = setTimeout(function() {
           if (!isServerRegister) {
-            console.log("\n:::::::::::::: Server Register Failed, Retrying registration ...\n");
             registerServer();
           }
         }, connectionRetryInterval);
@@ -227,25 +355,28 @@
       handleServerRegisterMessage = function(msg, ack) {
         if (msg.senderName && msg.senderName === serverName) {
           isServerRegister = true;
+
           if (registerServerTimeoutId) {
             clearTimeout(registerServerTimeoutId);
           }
-          connectionState = true;
+
+          asyncState = asyncStateType.OPEN;
+          fireEvent("stateChange", asyncStateType.OPEN);
           pushSendDataQueue = [];
-          // pushSendDataQueueHandler();
-          /**
-           * Handle Sending Message from outer class
-           */
-          fireEvent("message", msg, ack);
-          console.log("\n:::::::::::::: Ready for chat ...\n");
-        } else {
+
+          if (consoleLogging)
+            console.log('\x1b[42m\x1b[8m##\x1b[0m \x1b[32m%s\x1b[0m', " Async is Ready ...");
+          }
+        else {
           registerServer();
         }
       },
 
       pushSendData = function(msg) {
-        logger();
-        if (connectionState) {
+        if (onSendLogging)
+          logger("Send", msg);
+
+        if (asyncState === asyncStateType.OPEN) {
           socket.emit(msg);
         } else {
           pushSendDataQueue.push(msg);
@@ -263,8 +394,8 @@
       },
 
       pushSendDataQueueHandler = function() {
-        while (pushSendDataQueue.length > 0 && connectionState) {
-          let msg = pushSendDataQueue.splice(0, 1)[0];
+        while (pushSendDataQueue.length > 0 && asyncState === asyncStateType.OPEN) {
+          var msg = pushSendDataQueue.splice(0, 1)[0];
           pushSendData(msg);
         }
       },
@@ -293,54 +424,45 @@
 
     this.on = function(eventName, callback) {
       if (eventCallbacks[eventName]) {
-        let id = new Date().getTime();
+        var id = new Date().getTime();
         eventCallbacks[eventName][id] = callback;
         return id;
       }
-
-      if (eventName === "connect" && connectionState) {
-        callback(peerId);
-      }
     }
 
-    this.asyncReady = function(callback) {
+    this.asyncReady = function asyncReadyCallback(callback) {
       if (asyncReadyTimeoutId)
         clearTimeout(asyncReadyTimeoutId);
 
-      if (connectionState) {
+      if (asyncState === asyncStateType.OPEN) {
         callback();
       } else {
         asyncReadyTimeoutId = setTimeout(function() {
-          if (connectionState) {
+          if (asyncState === asyncStateType.OPEN) {
             callback();
           } else {
-            this.asyncReady(callback);
+            asyncReadyCallback(callback);
           }
         }, 1000);
       }
     }
 
     this.send = function(params, callback) {
-      /*
-       *  TYPE 3 => Message
-       *  TYPE 4 => Message ACK Needed
-       *  TYPE 5 => Message Sender ACK Needed
-       */
 
-      let messageType = (typeof params.type === "number")
+      var messageType = (typeof params.type === "number")
         ? params.type
         : (callback)
-          ? 5
-          : 3;
+          ? asyncMessageType.MESSAGE_SENDER_ACK_NEEDED
+          : asyncMessageType.MESSAGE;
 
-      let socketData = {
+      var socketData = {
         type: messageType,
         content: params.content
       };
 
-      if (messageType === 5 || messageType === 4) {
+      if (messageType === asyncMessageType.MESSAGE_SENDER_ACK_NEEDED || messageType === asyncMessageType.MESSAGE_ACK_NEEDED) {
         lastMessageId += 1;
-        let messageId = lastMessageId;
+        var messageId = lastMessageId;
 
         ackCallback[messageId] = function() {
           callback && callback();
@@ -357,6 +479,10 @@
       return connectionState;
     }
 
+    this.getAsyncState = function() {
+      return asyncState;
+    }
+
     this.getSendQueue = function() {
       return pushSendDataQueue;
     }
@@ -366,29 +492,33 @@
     }
 
     this.close = function() {
-      connectionState = false;
+      asyncState = asyncStateType.CLOSED;
+      fireEvent("stateChange", asyncStateType.CLOSED);
       isDeviceRegister = false;
       isSocketOpen = false;
       socket.close();
     }
 
-    this.logout = function(params) {
+    this.logout = function() {
       oldPeerId = peerId;
       peerId = undefined;
       isServerRegister = false;
       isDeviceRegister = false;
       isSocketOpen = false;
-      connectionState = false;
+      asyncState = asyncStateType.CLOSED;
+      fireEvent("stateChange", asyncStateType.CLOSED);
       pushSendDataQueue = [];
+      ackCallback = {};
       clearTimeouts();
-      socket.logout();
+      socket.close();
     }
 
     this.reconnectSocket = function() {
       oldPeerId = peerId;
       isDeviceRegister = false;
       isSocketOpen = false;
-      connectionState = false;
+      asyncState = asyncStateType.CLOSED;
+      fireEvent("stateChange", asyncStateType.CLOSED);
       clearTimeouts();
       socket.close();
     }

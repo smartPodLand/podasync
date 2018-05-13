@@ -1,7 +1,6 @@
 (function() {
   /*
    * Socket Module to connect and handle Socket functionalities
-   * @constructor
    * @module Socket
    *
    * @param {Object} params
@@ -20,13 +19,14 @@
       eventCallback = {},
       socket,
       waitForSocketToConnectTimeoutId,
+      lastReceivedMessageTime,
+      lastReceivedMessageTimeoutId,
+      lastSentMessageTime,
+      lastSentMessageTimeoutId,
       wsConnectionWaitTime = params.wsConnectionWaitTime || 500,
-      lastMessageTime,
-      lastMessageTimeoutId,
-      lastPingTimeoutId,
-      connectionCheckTimeout = params.connectionCheckTimeout || 10000,
-      connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold || 400,
-      pingTimeCheck = connectionCheckTimeout - connectionCheckTimeoutThreshold;
+      connectionCheckTimeout = params.connectionCheckTimeout || 90000,
+      connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold || 20000,
+      JSTimeLatency = 100;
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
@@ -47,25 +47,25 @@
           }
 
           socket.onmessage = function(event) {
-            let messageData = JSON.parse(event.data);
+            var messageData = JSON.parse(event.data);
             eventCallback["message"](messageData);
 
-            lastPingTimeoutId && clearTimeout(lastPingTimeoutId);
-            lastMessageTimeoutId && clearTimeout(lastMessageTimeoutId);
+            lastSentMessageTimeoutId && clearTimeout(lastSentMessageTimeoutId);
+            lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
 
-            lastMessageTime = new Date();
-            lastMessageTimeoutId = setTimeout(function() {
-              let currentDate = new Date();
-              if (currentDate - lastMessageTime >= pingTimeCheck) {
+            lastReceivedMessageTime = new Date();
+
+            lastReceivedMessageTimeoutId = setTimeout(function() {
+              var currentDate = new Date();
+              if (currentDate - lastReceivedMessageTime > connectionCheckTimeout - connectionCheckTimeoutThreshold + JSTimeLatency) {
                 ping();
               }
-            }, connectionCheckTimeout);
+            }, connectionCheckTimeout - connectionCheckTimeoutThreshold);
           }
 
           socket.onclose = function(event) {
-            lastMessageTimeoutId && clearTimeout(lastMessageTimeoutId);
-            lastPingTimeoutId && clearTimeout(lastPingTimeoutId);
-
+            lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
+            lastSentMessageTimeoutId && clearTimeout(lastSentMessageTimeoutId);
             eventCallback["close"](event);
           }
 
@@ -74,48 +74,52 @@
           }
         } catch (error) {
           eventCallback["error"](event);
-          console.log("Socket Module Catch Error => ", error);
         }
       },
 
       ping = function() {
         sendData({type: 0});
 
-        lastPingTimeoutId = setTimeout(function() {
-          let currentDate = new Date();
-
-          if (currentDate - lastMessageTime >= connectionCheckTimeout + connectionCheckTimeoutThreshold) {
+        lastSentMessageTimeoutId = setTimeout(function() {
+          if (lastSentMessageTime - lastReceivedMessageTime > connectionCheckTimeout + connectionCheckTimeoutThreshold) {
             socket.close();
           }
-        }, connectionCheckTimeout);
+        }, connectionCheckTimeout + connectionCheckTimeoutThreshold);
       },
 
       waitForSocketToConnect = function(callback) {
-        if (waitForSocketToConnectTimeoutId) {
-          clearTimeout(waitForSocketToConnectTimeoutId);
-        }
+        waitForSocketToConnectTimeoutId && clearTimeout(waitForSocketToConnectTimeoutId);
 
-        waitForSocketToConnectTimeoutId = setTimeout(function() {
-          if (socket.readyState == 1) {
-            callback();
-          } else {
-            waitForSocketToConnect(callback);
-          }
-        }, wsConnectionWaitTime);
+        if (socket.readyState === 1) {
+          callback();
+        } else {
+          waitForSocketToConnectTimeoutId = setTimeout(function() {
+            if (socket.readyState === 1) {
+              callback();
+            } else {
+              waitForSocketToConnect(callback);
+            }
+          }, wsConnectionWaitTime);
+        }
       },
 
       sendData = function(params) {
-        let data = {
+        var data = {
           type: params.type
         };
+
+        lastSentMessageTime = new Date();
 
         try {
           if (params.content) {
             data.content = JSON.stringify(params.content);
           }
-          socket.send(JSON.stringify(data));
-        } catch (e) {
-          console.log("Socket Module SendData Error =>", e);
+
+          if (socket.readyState === 1)
+            socket.send(JSON.stringify(data));
+          }
+        catch (error) {
+          throw new Error(error);
         }
       };
 
@@ -133,19 +137,9 @@
       connect();
     }
 
-    this.disconnect = function() {
-      socket.close();
-    }
-
     this.close = function() {
-      lastMessageTimeoutId && clearTimeout(lastMessageTimeoutId);
-      lastPingTimeoutId && clearTimeout(lastPingTimeoutId);
-      socket.close();
-    }
-
-    this.logout = function() {
-      lastMessageTimeoutId && clearTimeout(lastMessageTimeoutId);
-      lastPingTimeoutId && clearTimeout(lastPingTimeoutId);
+      lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
+      lastSentMessageTimeoutId && clearTimeout(lastSentMessageTimeoutId);
       socket.close();
     }
 
