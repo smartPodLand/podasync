@@ -25,9 +25,9 @@ var asyncClient = new Async(params);
 */
 asyncClient.asyncReady(function() {
 
-	/**
-	* A Custom Message To be Send Through DIRANA
-	*/
+/**
+* A Custom Message To be Send Through DIRANA
+*/
   var customMessage = {
     type: 3,
     content: {
@@ -36,14 +36,14 @@ asyncClient.asyncReady(function() {
     }
   };
 
-	/**
-	* Sending Message
-	*/
+/**
+* Sending Message
+*/
   asyncClient.send(customMessage);
 
-	/**
-	* Listening to responses came from DIRANA
-	*/
+/**
+* Listening to responses came from DIRANA
+*/
   asyncClient.on("message", function(msg, ack) {
     console.log(msg);
   });
