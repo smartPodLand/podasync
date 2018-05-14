@@ -146,7 +146,7 @@
     init();
   }
 
-  if (typeof exports !== undefined && module.exports) {
+  if (typeof module !== 'undefined' && typeof module.exports != "undefined") {
     module.exports = Socket;
   } else {
     if (!window.POD) {

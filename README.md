@@ -49,12 +49,11 @@ asyncClient.asyncReady(function() {
   });
 });
 ```
+
 To execute your code simple run following command in command line
 
-```
-cd /root_of_your_project
-node index.js
-```
+    cd /root_of_your_project
+    node index.js
 
 ## Motivation
 

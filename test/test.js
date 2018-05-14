@@ -1,7 +1,7 @@
 var assert = require('assert');
 var WebSocket = require('ws');
-var PODSocket = require('../src/socket.js');
-var Async = require('../src/async.js');
+var PODSocket = require('../src/network/socket.js');
+var Async = require('../src/network/async.js');
 
 var params = {
   socketAddress: "ws://172.16.110.235:8003/ws",

@@ -1,4 +1,4 @@
-var Async = require('./src/async.js');
+var Async = require('./src/network/async.js');
 var params = {
   socketAddress: "ws://172.16.110.235:8003/ws",
   serverName: "oauth-wire",
