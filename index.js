@@ -1,29 +1,21 @@
 var Async = require('./src/network/async.js');
 var params = {
-  socketAddress: "ws://172.16.110.235:8003/ws",
-  serverName: "oauth-wire",
-  wsConnectionWaitTime: 500,
-  connectionRetryInterval: 5000,
-  connectionCheckTimeout: 30000,
-  connectionCheckTimeoutThreshold: 10000,
-  messageTtl: 5000,
-  reconnectOnClose: true,
+  socketAddress: "ws://172.16.110.235:8003/ws", // Socket Server Address
+  serverName: "oauth-wire", // Server to to register on
+  wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
+  connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
+  connectionCheckTimeout: 90000, // Socket connection live time on server
+  connectionCheckTimeoutThreshold: 20000, // Socket Ping time threshold
+  messageTtl: 5000, // Message time to live
+  reconnectOnClose: true, // auto connect to socket after socket close
   consoleLogging: {
-    onFunction: true,
-    onMessageReceive: true,
-    onMessageSend: true
+    onFunction: true, // log main actions on console
+    onMessageReceive: true, // log received messages on console
+    onMessageSend: true // log sent messaged on console
   }
 };
 
-var PID,
-  AsyncState;
-
-var asyncStateType = {
-  CONNECTING: 0, // The connection is not yet open.
-  OPEN: 1, // The connection is open and ready to communicate.
-  CLOSING: 2, // The connection is in the process of closing.
-  CLOSED: 3 // The connection is closed or couldn't be opened.
-};
+var PID;
 
 var asyncClient = new Async(params);
 
@@ -37,23 +29,32 @@ asyncClient.asyncReady(function() {
       content: "Hello"
     }
   };
-  var m1 = setInterval(function() {
-    asyncClient.send(newCustomMessage2);
-  }, 4000);
+
+  /**
+   * Uncomment to send a message every 5 seconds
+   */
+  // var m1 = setInterval(function() {
+  //   asyncClient.send(newCustomMessage2);
+  // }, 5000);
 
   asyncClient.on("stateChange", function(currentState) {
+    /**
+     * You can get async state changes here
+     */
     console.log("Currrent Async State => ", currentState);
   });
 
   asyncClient.on("message", function(msg, ack) {
-    ack();
+    /**
+     * You can handle received message here
+     */
   });
 
   /**
-  * Checking how the push data Queue works when connection interupts
+  * Uncomment to auto logout after 40 seconds
   */
-  setTimeout(function() {
-    console.log("\n:::::::::::::: L O G G I N G :::: O U T ::::::::::::::::::::\n");
-    asyncClient.close();
-  }, 40000);
+  // setTimeout(function() {
+  //   console.log("\n:::::::::::::: L O G G I N G :::: O U T ::::::::::::::::::::\n");
+  //   asyncClient.close();
+  // }, 40000);
 });

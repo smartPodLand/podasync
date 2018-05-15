@@ -16,6 +16,9 @@
      *******************************************************/
 
     var address = params.socketAddress,
+      wsConnectionWaitTime = params.wsConnectionWaitTime || 500,
+      connectionCheckTimeout = params.connectionCheckTimeout || 90000,
+      connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold || 20000,
       eventCallback = {},
       socket,
       waitForSocketToConnectTimeoutId,
@@ -23,9 +26,6 @@
       lastReceivedMessageTimeoutId,
       lastSentMessageTime,
       lastSentMessageTimeoutId,
-      wsConnectionWaitTime = params.wsConnectionWaitTime || 500,
-      connectionCheckTimeout = params.connectionCheckTimeout || 90000,
-      connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold || 20000,
       JSTimeLatency = 100;
 
     /*******************************************************
@@ -57,7 +57,7 @@
 
             lastReceivedMessageTimeoutId = setTimeout(function() {
               var currentDate = new Date();
-              if (currentDate - lastReceivedMessageTime > connectionCheckTimeout - connectionCheckTimeoutThreshold + JSTimeLatency) {
+              if (currentDate - lastReceivedMessageTime > connectionCheckTimeout - connectionCheckTimeoutThreshold) { //-JSTimeLatency
                 ping();
               }
             }, connectionCheckTimeout - connectionCheckTimeoutThreshold);
@@ -73,7 +73,7 @@
             eventCallback["error"](event);
           }
         } catch (error) {
-          eventCallback["error"](event);
+          throw new Error(error);
         }
       },
 
