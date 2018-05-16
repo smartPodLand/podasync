@@ -139,16 +139,13 @@
           isDeviceRegister = false;
           oldPeerId = peerId;
           asyncState = asyncStateType.CLOSED;
+          fireEvent("disconnect", event);
           fireEvent("stateChange", asyncStateType.CLOSED);
 
           if (reconnectOnClose) {
             socketReconnectRetryInterval = setTimeout(function() {
               if (consoleLogging) {
-                if (isNode) {
-                  console.log("\x1b[46m\x1b[8m##\x1b[0m \x1b[36m%s\x1b[0m", " Reconnecting after " + retryStep + "s ...");
-                } else {
-                  console.log("%c   Reconnecting after " + retryStep + "s ...", 'border-left: solid #08bbdb 10px; color: #08bbdb;');
-                }
+                Utility.stepLogger("Reconnecting after " + retryStep + "s ...");
               }
               socket.connect();
             }, 1000 * retryStep);
@@ -386,6 +383,9 @@
         eventCallbacks[eventName][id] = callback;
         return id;
       }
+      if (eventName === "connect" && asyncState === asyncStateType.OPEN) {
+        callback(peerId);
+      }
     }
 
     this.asyncReady = function asyncReadyCallback(callback) {
@@ -443,6 +443,14 @@
 
     this.getPeerId = function() {
       return peerId;
+    }
+
+    this.getServerName = function() {
+      return serverName;
+    }
+
+    this.setServerName = function(newServerName) {
+      serverName = newServerName
     }
 
     this.close = function() {
