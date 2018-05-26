@@ -14,8 +14,11 @@ var Async = require('podasync');
 * serverName: Chat Server Name
 */
 var params = {
-  socketAddress: "ws://172.16.110.235:8003/ws",
-  serverName: "oauth-wire"
+  socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
+  ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
+  ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
+  serverName: "chat-server", // {**REQUIRED**} Server to to register on
+  token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Sample
 };
 
 var asyncClient = new Async(params);
