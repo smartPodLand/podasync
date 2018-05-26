@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>POD Async Test</title>
+  <script type="text/javascript" src="../src/network/socket.js"></script>
+  <script type="text/javascript" src="../src/utility/utility.js"></script>
+  <script type="text/javascript" src="../src/network/async.js"></script>
+</head>
+
+<body>
+  <script type="text/javascript">
+    var Async = POD.Async;
+    var params = {
+      socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
+      ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
+      ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
+      serverName: "chat-server", // {**REQUIRED**} Server to to register on
+      token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
+      wsConnectionWaitTime: 500,
+      connectionRetryInterval: 5000,
+      connectionCheckTimeout: 30000,
+      connectionCheckTimeoutThreshold: 10000,
+      messageTtl: 5000,
+      reconnectOnClose: true,
+      consoleLogging: {
+        onFunction: true,
+        onMessageReceive: true,
+        onMessageSend: true
+      }
+    };
+
+    var PID;
+
+    var asyncClient = new Async(params);
+
+    asyncClient.asyncReady(function() {
+      PID = asyncClient.getPeerId();
+
+      var newCustomMessage2 = {
+        type: 3,
+        content: {
+          receivers: ['118833'],
+          content: "Hello"
+        }
+      };
+
+      /**
+       * Uncomment to send a message every 5 seconds
+       */
+      var m1 = setInterval(function() {
+        asyncClient.send(newCustomMessage2);
+      }, 5000);
+
+      asyncClient.on("stateChange", function(currentState) {
+        /**
+         * You can get async state changes here
+         */
+        console.log("Currrent Async State => ", currentState);
+      });
+
+      asyncClient.on("message", function(msg, ack) {
+        /**
+         * You can handle received message here
+         */
+      });
+
+      /**
+       * Uncomment to auto logout after 40 seconds
+       */
+      // setTimeout(function() {
+      //   console.log("\n:::::::::::::: L O G G I N G :::: O U T ::::::::::::::::::::\n");
+      //   asyncClient.close();
+      // }, 40000);
+    });
+  </script>
+</body>
+
+</html>

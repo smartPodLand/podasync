@@ -13,11 +13,13 @@
      *******************************************************/
 
     var PodSocketClass,
-      PodUtility;
+      PodUtility,
+      http;
 
     if (typeof(require) !== "undefined" && typeof(exports) !== "undefined") {
       PodSocketClass = require('./socket.js');
       PodUtility = require('../utility/utility.js');
+      http = require('http');
     } else {
       PodSocketClass = POD.Socket;
       PodUtility = POD.Utility;
@@ -51,6 +53,9 @@
       deviceId = (params.deviceId)
         ? params.deviceId
         : undefined,
+      token = params.token,
+      ssoGrantDevicesAddress = params.ssoGrantDevicesAddress,
+      ssoHost = params.ssoHost,
       eventCallbacks = {
         connect: {},
         disconnect: {},
@@ -68,6 +73,7 @@
       asyncState = asyncStateType.CONNECTING,
       registerServerTimeoutId,
       registerDeviceTimeoutId,
+      checkIfSocketHasOpennedTimeoutId,
       asyncReadyTimeoutId,
       pushSendDataQueue = [],
       oldPeerId,
@@ -104,6 +110,7 @@
           type: type,
           msg: msg,
           peerId: peerId,
+          token: token,
           deviceId: deviceId,
           isSocketOpen: isSocketOpen,
           isDeviceRegister: isDeviceRegister,
@@ -114,15 +121,20 @@
       },
 
       initSocket = function() {
-        setTimeout(function() {
+
+        socket = new PodSocketClass({socketAddress: params.socketAddress, wsConnectionWaitTime: params.wsConnectionWaitTime, connectionCheckTimeout: params.connectionCheckTimeout, connectionCheckTimeoutThreshold: params.connectionCheckTimeoutThreshold});
+
+        checkIfSocketHasOpennedTimeoutId = setTimeout(function() {
           if (!isSocketOpen) {
             throw new Error("Can Not Open Socket!");
           }
         }, 65000);
 
-        socket = new PodSocketClass({socketAddress: params.socketAddress, wsConnectionWaitTime: params.wsConnectionWaitTime, connectionCheckTimeout: params.connectionCheckTimeout, connectionCheckTimeoutThreshold: params.connectionCheckTimeoutThreshold});
-
         socket.on("open", function() {
+          checkIfSocketHasOpennedTimeoutId && clearTimeout(checkIfSocketHasOpennedTimeoutId);
+          socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
+          socketReconnectCheck && clearTimeout(socketReconnectCheck);
+
           isSocketOpen = true;
           retryStep = 1;
         });
@@ -151,25 +163,27 @@
             }, 1000 * retryStep);
             retryStep *= 2;
 
-            if (!socketReconnectCheck) {
-              socketReconnectCheck = setTimeout(function() {
-                if (!isSocketOpen) {
-                  socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
-                  socketReconnectCheck && clearTimeout(socketReconnectCheck);
-                  throw new Error("Can Not Open Socket!");
-                }
-              }, 65000);
-            }
+            socketReconnectCheck && clearTimeout(socketReconnectCheck);
+
+            socketReconnectCheck = setTimeout(function() {
+              if (!isSocketOpen) {
+                // throw new Error("Can Not Open Socket!");
+                console.log("Can Not Open Socket!");
+              }
+            }, 65000);
+
           } else {
             socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
             socketReconnectCheck && clearTimeout(socketReconnectCheck);
-            throw new Error("Socket Closed!");
+            // throw new Error("Socket Closed!");
+            console.log("Socket Closed!");
           }
 
         });
 
         socket.on("error", function(error) {
-          throw new Error(error);
+          console.log(error);
+          // throw new Error(error);
         });
       },
 
@@ -190,7 +204,7 @@
 
         switch (msg.type) {
           case asyncMessageType.PING:
-            handleDeviceIdMessage(msg);
+            handlePingMessage(msg);
             break;
 
           case asyncMessageType.SERVER_REGISTER:
@@ -221,35 +235,108 @@
         }
       },
 
-      handleDeviceIdMessage = function(msg) {
+      getDeviceIdWithToken = function(callback) {
+
+        if (isNode) {
+          var options = {
+            host: ssoHost,
+            path: ssoGrantDevicesAddress,
+            method: "GET",
+            headers: {
+              "Authorization": "Bearer " + token
+            }
+          };
+
+          http.get(options, function(response) {
+            var resultText = '';
+
+            response.on('data', function(data) {
+              resultText += data;
+            });
+
+            response.on('end', function() {
+              var devices = JSON.parse(resultText).devices;
+              if (devices.length > 0) {
+                for (var i = 0; i < devices.length; i++) {
+                  if (devices[i].current) {
+                    deviceId = devices[i].uid;
+                    break;
+                  }
+                }
+
+                if (!deviceId) {
+                  // throw new Error("Token is invalid");
+                  console.log("Token is invalid");
+                } else {
+                  callback();
+                }
+              }
+            });
+          });
+
+        } else {
+          var request = new XMLHttpRequest();
+          request.open("GET", "http://" + ssoHost + ssoGrantDevicesAddress, true);
+          request.setRequestHeader("Authorization", "Bearer " + token);
+          request.send();
+
+          request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+              var response = request.responseText;
+
+              var devices = JSON.parse(response).devices;
+
+              if (devices.length > 0) {
+                for (var i = 0; i < devices.length; i++) {
+                  if (devices[i].current) {
+                    deviceId = devices[i].uid;
+                    break;
+                  }
+                }
+
+                if (!deviceId) {
+                  // throw new Error("Token is invalid");
+                  console.log("Token is invalid");
+                } else {
+                  callback();
+                }
+              }
+            }
+          }
+        }
+      },
+
+      handlePingMessage = function(msg) {
         if (msg.content) {
           if (deviceId === undefined) {
-            deviceId = msg.content;
-
-            if (consoleLogging) {
-              Utility.stepLogger("Device ID =>\t" + msg.content);
+            getDeviceIdWithToken(function() {
+              if (consoleLogging) {
+                Utility.stepLogger("Device ID =>\t" + deviceId);
+              }
+              registerDevice();
+            });
+          } else {
+            if (!isDeviceRegister) {
+              registerDevice();
+            } else {
+              if (isServerRegister && peerId === oldPeerId) {
+                asyncState = asyncStateType.OPEN;
+                fireEvent("stateChange", asyncStateType.OPEN);
+                isServerRegister = true;
+                pushSendDataQueueHandler();
+              } else {
+                registerServer();
+              }
             }
           }
         } else {
-
           if (consoleLogging) {
             Utility.stepLogger("Ping Response at\t" + new Date());
           }
         }
-
-        if (deviceId) {
-          if (!isDeviceRegister) {
-            registerDevice();
-          }
-        } else {
-          var deviceIdTimeoutId = setTimeout(function() {
-            handleDeviceIdMessage();
-          }, 500);
-        }
       },
 
       registerDevice = function(isRetry) {
-
         if (consoleLogging) {
           Utility.stepLogger("Registering Device ...");
         }
@@ -269,16 +356,14 @@
       },
 
       handleDeviceRegisterMessage = function(recievedPeerId) {
-        if (isDeviceRegister) {
-          return;
-        }
+        if (!isDeviceRegister) {
+          if (registerDeviceTimeoutId) {
+            clearTimeout(registerDeviceTimeoutId);
+          }
 
-        if (registerDeviceTimeoutId) {
-          clearTimeout(registerDeviceTimeoutId);
+          isDeviceRegister = true;
+          peerId = recievedPeerId;
         }
-
-        isDeviceRegister = true;
-        peerId = recievedPeerId;
 
         if (isServerRegister && peerId === oldPeerId) {
           asyncState = asyncStateType.OPEN;
@@ -340,7 +425,6 @@
           pushSendDataQueue.push(msg);
         }
       },
-
       clearTimeouts = function() {
         if (registerDeviceTimeoutId != undefined) {
           clearTimeout(registerDeviceTimeoutId);
@@ -350,14 +434,12 @@
           clearTimeout(registerServerTimeoutId);
         }
       },
-
       pushSendDataQueueHandler = function() {
         while (pushSendDataQueue.length > 0 && asyncState === asyncStateType.OPEN) {
           var msg = pushSendDataQueue.splice(0, 1)[0];
           pushSendData(msg);
         }
       },
-
       fireEvent = function(eventName, param, ack) {
         try {
           if (ack) {
@@ -450,7 +532,11 @@
     }
 
     this.setServerName = function(newServerName) {
-      serverName = newServerName
+      serverName = newServerName;
+    }
+
+    this.setToken = function(newToken) {
+      token = newToken;
     }
 
     this.close = function() {

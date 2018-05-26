@@ -4,13 +4,16 @@ var PODSocket = require('../src/network/socket.js');
 var Async = require('../src/network/async.js');
 
 var params = {
-  socketAddress: "ws://172.16.110.235:8003/ws",
-  serverName: "oauth-wire",
+  socketAddress: "ws://172.16.106.26:8003/ws",
+  ssoHost: "172.16.110.76",
+  ssoGrantDevicesAddress: "/oauth2/grants/devices",
+  serverName: "chat-server",
+  token: "ed4be26a60c24ed594e266a2181424c5",
   reconnectOnClose: false,
   consoleLogging: {
-    // onFunction: true,
-    // onMessageReceive: true,
-    // onMessageSend: true
+    onFunction: true,
+    onMessageReceive: true,
+    onMessageSend: true
   }
 };
 
@@ -234,8 +237,7 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() 
 
     asyncClient5.send(msg);
 
-    asyncClient6.on("message", function(msg, ack){
-    });
+    asyncClient6.on("message", function(msg, ack) {});
 
     asyncClient5.on("message", function(msg, ack) {
       if (msg.senderId == peerId6) {
@@ -245,7 +247,6 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() 
   });
 
 });
-
 
 /**
 * POD Async Sending & Receiving Type 5
@@ -277,8 +278,7 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED) And Invoking 
 
     asyncClient7.send(msg, console.log("    ✴ \x1b[33m%s\x1b[0m", "ACK CallBack Function Invoked Successfully"));
 
-    asyncClient8.on("message", function(msg, ack){
-    });
+    asyncClient8.on("message", function(msg, ack) {});
 
     asyncClient7.on("message", function(msg, ack) {
       if (msg.senderId == peerId8) {

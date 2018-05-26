@@ -20,6 +20,7 @@
       var type = params.type,
         msg = params.msg,
         peerId = params.peerId,
+        token = params.token,
         deviceId = params.deviceId,
         isSocketOpen = params.isSocketOpen,
         isDeviceRegister = params.isDeviceRegister,
@@ -60,6 +61,7 @@
         console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t\t\t\t\t\t\t      \x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " PEER ID\t\t", peerId);
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " SSO TOKEN\t\t", token);
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE ID\t\t", deviceId);
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " IS SOCKET OPEN\t", isSocketOpen);
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE REGISTER\t", isDeviceRegister);
@@ -107,6 +109,7 @@
         console.log("%cS O C K E T    S T A T U S", 'background: ' + ColorCSS + '; padding: 10px 142px; font-weight: bold; font-size: 18px; color: #fff;');
         console.log("%c\t\t\t\t\t\t\t\t\t\t", 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';border-right: solid 10px ' + ColorCSS);
         console.log("%c   PEER ID\t\t %c" + peerId, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
+        console.log("%c   SSO TOKEN\t\t %c" + token, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
         console.log("%c   DEVICE ID\t\t %c" + deviceId, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
         console.log("%c   IS SOCKET OPEN\t %c" + isSocketOpen, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
         console.log("%c   DEVICE REGISTER\t %c" + isDeviceRegister, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');

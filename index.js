@@ -1,7 +1,10 @@
 var Async = require('./src/network/async.js');
 var params = {
-  socketAddress: "ws://172.16.110.235:8003/ws", // Socket Server Address
-  serverName: "oauth-wire", // Server to to register on
+  socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
+  ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
+  ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
+  serverName: "chat-server", // {**REQUIRED**} Server to to register on
+  token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 90000, // Socket connection live time on server
@@ -23,19 +26,19 @@ asyncClient.asyncReady(function() {
   PID = asyncClient.getPeerId();
 
   var newCustomMessage2 = {
-    type: 3,
+    type: 5,
     content: {
-      receivers: ['2735737'],
-      content: "Hello"
+      receivers: ['118833'],
+      content: "Hello!"
     }
   };
 
   /**
    * Uncomment to send a message every 5 seconds
    */
-  // var m1 = setInterval(function() {
-  //   asyncClient.send(newCustomMessage2);
-  // }, 5000);
+  var m1 = setInterval(function() {
+    asyncClient.send(newCustomMessage2);
+  }, 5000);
 
   asyncClient.on("stateChange", function(currentState) {
     /**
