@@ -36,9 +36,9 @@ asyncClient.asyncReady(function() {
   /**
    * Uncomment to send a message every 5 seconds
    */
-  var m1 = setInterval(function() {
-    asyncClient.send(newCustomMessage2);
-  }, 5000);
+  // var m1 = setInterval(function() {
+  //   asyncClient.send(newCustomMessage2);
+  // }, 5000);
 
   asyncClient.on("stateChange", function(currentState) {
     /**

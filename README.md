@@ -66,7 +66,6 @@ This module helps you to easily connect POD chat service.
 
 ```javascript
 npm install podasync --save
-npm install
 ```
 
 ## API Reference

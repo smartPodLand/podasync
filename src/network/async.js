@@ -176,7 +176,7 @@
             socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
             socketReconnectCheck && clearTimeout(socketReconnectCheck);
             // throw new Error("Socket Closed!");
-            console.log("Socket Closed!");
+            // console.log("Socket Closed!");
           }
 
         });
@@ -220,6 +220,7 @@
             break;
 
           case asyncMessageType.MESSAGE_ACK_NEEDED:
+
           case asyncMessageType.MESSAGE_SENDER_ACK_NEEDED:
             fireEvent("message", msg, ack);
             ack();
@@ -425,6 +426,7 @@
           pushSendDataQueue.push(msg);
         }
       },
+
       clearTimeouts = function() {
         if (registerDeviceTimeoutId != undefined) {
           clearTimeout(registerDeviceTimeoutId);
@@ -434,12 +436,14 @@
           clearTimeout(registerServerTimeoutId);
         }
       },
+
       pushSendDataQueueHandler = function() {
         while (pushSendDataQueue.length > 0 && asyncState === asyncStateType.OPEN) {
           var msg = pushSendDataQueue.splice(0, 1)[0];
           pushSendData(msg);
         }
       },
+
       fireEvent = function(eventName, param, ack) {
         try {
           if (ack) {
@@ -483,12 +487,11 @@
           } else {
             asyncReadyCallback(callback);
           }
-        }, 1000);
+        }, 10);
       }
     }
 
     this.send = function(params, callback) {
-
       var messageType = (typeof params.type === "number")
         ? params.type
         : (callback)

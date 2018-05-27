@@ -3,19 +3,31 @@ var WebSocket = require('ws');
 var PODSocket = require('../src/network/socket.js');
 var Async = require('../src/network/async.js');
 
+var SSO_TOKENS = {
+  TOKEN_1: "ed4be26a60c24ed594e266a2181424c5",
+  TOKEN_2: "c0866c4cc5274ea7ada6b01575b19d24",
+  TOKEN_3: "afa51d8291dc4072a0831d3a18cb5030"
+}
+
 var params = {
   socketAddress: "ws://172.16.106.26:8003/ws",
   ssoHost: "172.16.110.76",
   ssoGrantDevicesAddress: "/oauth2/grants/devices",
   serverName: "chat-server",
-  token: "ed4be26a60c24ed594e266a2181424c5",
+  token: SSO_TOKENS.TOKEN_1,
   reconnectOnClose: false,
   consoleLogging: {
-    onFunction: true,
-    onMessageReceive: true,
-    onMessageSend: true
+    // onFunction: true,
+    // onMessageReceive: true,
+    // onMessageSend: true
   }
 };
+
+var params2 = Object.assign({}, params);
+var params3 = Object.assign({}, params);
+
+params2.token = SSO_TOKENS.TOKEN_2;
+params3.token = SSO_TOKENS.TOKEN_3;
 
 /**
 * Websocket Protocol
@@ -113,7 +125,6 @@ describe("POD Socket Class", function() {
   });
 
   it("Should Close Socket Connection", function(done) {
-
     socket.on("open", function() {
       socket.close();
     });
@@ -130,22 +141,30 @@ describe("POD Socket Class", function() {
 describe("POD Async Class Connecting", function() {
   this.timeout(5000);
 
-  var asyncClient,
+  var asyncClient1,
     asyncClient2,
     peerId;
 
+  beforeEach(() => {
+    asyncClient1 = new Async(params);
+    asyncClient2 = new Async(params2);
+  });
+
+  afterEach(() => {
+    asyncClient1.logout();
+    asyncClient2.logout();
+  });
+
   it("Should Connect to Async and Get Ready", function(done) {
-    asyncClient = new Async(params);
-    asyncClient.asyncReady(function() {
+    asyncClient1.asyncReady(function() {
       done();
     });
   });
 
   it("Should Connect to Async and Get Client's PeerID", function(done) {
-    asyncClient2 = new Async(params);
     asyncClient2.asyncReady(function() {
       peerId = asyncClient2.getPeerId();
-      if (peerId && peerId.length == 7) {
+      if (peerId) {
         done();
       }
     });
@@ -158,53 +177,84 @@ describe("POD Async Class Connecting", function() {
 describe("POD Async Sending & Receiving Type 3", function() {
   this.timeout(5000);
 
-  var asyncClient3 = new Async(params),
-    asyncClient4 = new Async(params),
-    peerId3,
-    peerId4;
+  var asyncClient1,
+    asyncClient2,
+    peerId1,
+    peerId2;
 
-  asyncClient3.asyncReady(function() {
-    peerId3 = asyncClient3.getPeerId();
+  beforeEach(() => {
+    asyncClient1 = new Async(params);
+    asyncClient2 = new Async(params2);
   });
 
-  asyncClient4.asyncReady(function() {
-    peerId4 = asyncClient4.getPeerId();
+  afterEach(() => {
+    asyncClient1.logout();
+    asyncClient2.logout();
   });
 
   it("Should be Able to Send Type 3 Message from Client1 to Client2", function(done) {
-    var msg = {
-      type: 3,
-      content: {
-        receivers: [peerId4],
-        content: "Hello"
+    var msg = "";
+    asyncClient1.asyncReady(function recursive() {
+      peerId1 = asyncClient1.getPeerId();
+      if (msg.type !== undefined) {
+        asyncClient1.send(msg);
+      } else {
+        setTimeout(function() {
+          recursive();
+        }, 10);
       }
-    };
+    });
 
-    asyncClient3.send(msg);
-    asyncClient4.on("message", function(msg, ack) {
-      if (msg.senderId == peerId3)
+    asyncClient2.asyncReady(function() {
+      peerId2 = asyncClient2.getPeerId();
+
+      msg = {
+        type: 3,
+        content: {
+          receivers: [peerId2],
+          content: "Hello"
+        }
+      };
+    });
+
+    asyncClient2.on("message", function(msg, ack) {
+      if (msg.senderId == peerId1) {
         done();
       }
-    );
+    });
   });
 
   it("Should be Able to Send Type 3 Message from Client2 to Client1", function(done) {
-    var msg = {
-      type: 3,
-      content: {
-        receivers: [peerId3],
-        content: "Hello"
+    var msg = "";
+    asyncClient2.asyncReady(function recursive() {
+      peerId2 = asyncClient2.getPeerId();
+      if (msg.type !== undefined) {
+        asyncClient2.send(msg);
+      } else {
+        setTimeout(function() {
+          recursive();
+        }, 10);
       }
-    };
+    });
 
-    asyncClient4.send(msg);
-    asyncClient3.on("message", function(msg, ack) {
-      if (msg.senderId == peerId4)
+    asyncClient1.asyncReady(function() {
+      peerId1 = asyncClient1.getPeerId();
+
+      msg = {
+        type: 3,
+        content: {
+          receivers: [peerId1],
+          content: "Hello"
+        }
+      };
+    });
+
+    asyncClient1.on("message", function(msg, ack) {
+      if (msg.senderId == peerId2) {
         done();
       }
-    );
+    });
   });
-
 });
 
 /**
@@ -213,39 +263,54 @@ describe("POD Async Sending & Receiving Type 3", function() {
 describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() {
   this.timeout(5000);
 
-  var asyncClient5 = new Async(params),
-    asyncClient6 = new Async(params),
-    peerId5,
-    peerId6;
+  var asyncClient1,
+    asyncClient2,
+    peerId1,
+    peerId2;
 
-  asyncClient5.asyncReady(function() {
-    peerId5 = asyncClient5.getPeerId();
+  beforeEach(() => {
+    asyncClient1 = new Async(params);
+    asyncClient2 = new Async(params2);
   });
 
-  asyncClient6.asyncReady(function() {
-    peerId6 = asyncClient6.getPeerId();
+  afterEach(() => {
+    asyncClient1.logout();
+    asyncClient2.logout();
   });
 
   it("Should be Able to Send Type 5 Message from Client1 to Client2 and Receive ACK", function(done) {
-    var msg = {
-      type: 5,
-      content: {
-        receivers: [peerId6],
-        content: "Hello"
+    var msg = "";
+    asyncClient1.asyncReady(function recursive() {
+      peerId1 = asyncClient1.getPeerId();
+      if (msg.type !== undefined) {
+        asyncClient1.send(msg);
+      } else {
+        setTimeout(function() {
+          recursive();
+        }, 10);
       }
-    };
+    });
 
-    asyncClient5.send(msg);
+    asyncClient2.asyncReady(function() {
+      peerId2 = asyncClient2.getPeerId();
 
-    asyncClient6.on("message", function(msg, ack) {});
+      msg = {
+        type: 5,
+        content: {
+          receivers: [peerId2],
+          content: "Hello"
+        }
+      };
+    });
 
-    asyncClient5.on("message", function(msg, ack) {
-      if (msg.senderId == peerId6) {
+    asyncClient2.on("message", function(msg, ack) {});
+
+    asyncClient1.on("message", function(msg, ack) {
+      if (msg.senderId == peerId2) {
         done();
       }
     });
   });
-
 });
 
 /**
@@ -254,34 +319,50 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() 
 describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED) And Invoking Callback Function", function() {
   this.timeout(5000);
 
-  var asyncClient7 = new Async(params),
-    asyncClient8 = new Async(params),
-    peerId7,
-    peerId8;
+  var asyncClient1,
+    asyncClient2,
+    peerId1,
+    peerId2;
 
-  asyncClient7.asyncReady(function() {
-    peerId7 = asyncClient7.getPeerId();
+  beforeEach(() => {
+    asyncClient1 = new Async(params);
+    asyncClient2 = new Async(params2);
   });
 
-  asyncClient8.asyncReady(function() {
-    peerId8 = asyncClient8.getPeerId();
+  afterEach(() => {
+    asyncClient1.logout();
+    asyncClient2.logout();
   });
 
   it("Should be Able to Send Type 5 Message from Client1 to Client2 and Receive ACK", function(done) {
-    var msg = {
-      type: 5,
-      content: {
-        receivers: [peerId8],
-        content: "Hello"
+    var msg = "";
+    asyncClient1.asyncReady(function recursive() {
+      peerId1 = asyncClient1.getPeerId();
+      if (msg.type !== undefined) {
+        asyncClient1.send(msg, console.log("    ✴ \x1b[33m%s\x1b[0m", "ACK CallBack Function Invoked Successfully"));
+      } else {
+        setTimeout(function() {
+          recursive();
+        }, 10);
       }
-    };
+    });
 
-    asyncClient7.send(msg, console.log("    ✴ \x1b[33m%s\x1b[0m", "ACK CallBack Function Invoked Successfully"));
+    asyncClient2.asyncReady(function() {
+      peerId2 = asyncClient2.getPeerId();
 
-    asyncClient8.on("message", function(msg, ack) {});
+      msg = {
+        type: 5,
+        content: {
+          receivers: [peerId2],
+          content: "Hello"
+        }
+      };
+    });
 
-    asyncClient7.on("message", function(msg, ack) {
-      if (msg.senderId == peerId8) {
+    asyncClient2.on("message", function(msg, ack) {});
+
+    asyncClient1.on("message", function(msg, ack) {
+      if (msg.senderId == peerId2) {
         done();
       }
     });
