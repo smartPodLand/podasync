@@ -220,10 +220,9 @@
             break;
 
           case asyncMessageType.MESSAGE_ACK_NEEDED:
-
           case asyncMessageType.MESSAGE_SENDER_ACK_NEEDED:
             fireEvent("message", msg, ack);
-            ack();
+            // ack();
             break;
 
           case asyncMessageType.ACK:
