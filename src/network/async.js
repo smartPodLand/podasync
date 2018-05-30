@@ -222,7 +222,6 @@
           case asyncMessageType.MESSAGE_ACK_NEEDED:
           case asyncMessageType.MESSAGE_SENDER_ACK_NEEDED:
             fireEvent("message", msg, ack);
-            // ack();
             break;
 
           case asyncMessageType.ACK:
@@ -316,18 +315,7 @@
               registerDevice();
             });
           } else {
-            if (!isDeviceRegister) {
-              registerDevice();
-            } else {
-              if (isServerRegister && peerId === oldPeerId) {
-                asyncState = asyncStateType.OPEN;
-                fireEvent("stateChange", asyncStateType.OPEN);
-                isServerRegister = true;
-                pushSendDataQueueHandler();
-              } else {
-                registerServer();
-              }
-            }
+            registerDevice();
           }
         } else {
           if (consoleLogging) {
