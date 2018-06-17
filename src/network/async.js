@@ -62,7 +62,8 @@
         reconnect: {},
         message: {},
         asyncReady: {},
-        stateChange: {}
+        stateChange: {},
+        error: {}
       },
       ackCallback = {},
       socket,
@@ -88,15 +89,16 @@
       reconnectOnClose = (typeof params.reconnectOnClose === "boolean")
         ? params.reconnectOnClose
         : true,
-      consoleLogging = (params.consoleLogging && typeof params.consoleLogging.onFunction === "boolean")
-        ? params.consoleLogging.onFunction
+      asyncLogging = (params.asyncLogging && typeof params.asyncLogging.onFunction === "boolean")
+        ? params.asyncLogging.onFunction
         : false,
-      onReceiveLogging = (params.consoleLogging && typeof params.consoleLogging.onMessageReceive === "boolean")
-        ? params.consoleLogging.onMessageReceive
+      onReceiveLogging = (params.asyncLogging && typeof params.asyncLogging.onMessageReceive === "boolean")
+        ? params.asyncLogging.onMessageReceive
         : false,
-      onSendLogging = (params.consoleLogging && typeof params.consoleLogging.onMessageSend === "boolean")
-        ? params.consoleLogging.onMessageSend
+      onSendLogging = (params.asyncLogging && typeof params.asyncLogging.onMessageSend === "boolean")
+        ? params.asyncLogging.onMessageSend
         : false;
+
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
      *******************************************************/
@@ -105,8 +107,8 @@
         initSocket();
       },
 
-      logger = function(type, msg) {
-        Utility.consoleLogger({
+      asyncLogger = function(type, msg) {
+        Utility.asyncLogger({
           type: type,
           msg: msg,
           peerId: peerId,
@@ -126,7 +128,10 @@
 
         checkIfSocketHasOpennedTimeoutId = setTimeout(function() {
           if (!isSocketOpen) {
-            throw new Error("Can Not Open Socket!");
+            fireEvent("error", {
+              errorCode: 4001,
+              errorMessage: "Can not open Socket after 65 seconds!"
+            });
           }
         }, 65000);
 
@@ -142,7 +147,7 @@
         socket.on("message", function(msg) {
           handleSocketMessage(msg);
           if (onReceiveLogging) {
-            logger("Receive", msg);
+            asyncLogger("Receive", msg);
           }
         });
 
@@ -156,8 +161,8 @@
 
           if (reconnectOnClose) {
             socketReconnectRetryInterval = setTimeout(function() {
-              if (consoleLogging) {
-                Utility.stepLogger("Reconnecting after " + retryStep + "s ...");
+              if (asyncLogging) {
+                Utility.asyncStepLogger("Reconnecting after " + retryStep + "s ...");
               }
               socket.connect();
             }, 1000 * retryStep);
@@ -181,9 +186,20 @@
 
         });
 
+        socket.on("customError", function(error) {
+          fireEvent("error", {
+            errorCode: error.errorCode,
+            errorMessage: error.errorMessage,
+            errorEvent: error.errorEvent
+          });
+        });
+
         socket.on("error", function(error) {
-          console.log(error);
-          // throw new Error(error);
+          fireEvent("error", {
+            errorCode: error.target._closeCode,
+            errorMessage: error.message,
+            errorEvent: error
+          });
         });
       },
 
@@ -231,6 +247,14 @@
               delete ackCallback[msg.senderMessageId];
             }
             break;
+
+          case asyncMessageType.ERROR_MESSAGE:
+            fireEvent("error", {
+              errorCode: 4002,
+              errorMessage: "Async Error!",
+              errorEvent: msg
+            });
+            break;
         }
       },
 
@@ -264,8 +288,10 @@
                 }
 
                 if (!deviceId) {
-                  // throw new Error("Token is invalid");
-                  console.log("Token is invalid");
+                  fireEvent("error", {
+                    errorCode: 4003,
+                    errorMessage: "Invalid Token!"
+                  });
                 } else {
                   callback();
                 }
@@ -294,8 +320,10 @@
                 }
 
                 if (!deviceId) {
-                  // throw new Error("Token is invalid");
-                  console.log("Token is invalid");
+                  fireEvent("error", {
+                    errorCode: 4003,
+                    errorMessage: "Invalid Token!"
+                  });
                 } else {
                   callback();
                 }
@@ -309,8 +337,8 @@
         if (msg.content) {
           if (deviceId === undefined) {
             getDeviceIdWithToken(function() {
-              if (consoleLogging) {
-                Utility.stepLogger("Device ID =>\t" + deviceId);
+              if (asyncLogging) {
+                Utility.asyncStepLogger("Device ID =>\t" + deviceId);
               }
               registerDevice();
             });
@@ -318,15 +346,15 @@
             registerDevice();
           }
         } else {
-          if (consoleLogging) {
-            Utility.stepLogger("Ping Response at\t" + new Date());
+          if (asyncLogging) {
+            Utility.asyncStepLogger("Ping Response at\t" + new Date());
           }
         }
       },
 
       registerDevice = function(isRetry) {
-        if (consoleLogging) {
-          Utility.stepLogger("Registering Device ...");
+        if (asyncLogging) {
+          Utility.asyncStepLogger("Registering Device ...");
         }
 
         var content = {
@@ -365,8 +393,8 @@
 
       registerServer = function() {
 
-        if (consoleLogging) {
-          Utility.stepLogger("Registering Server ...");
+        if (asyncLogging) {
+          Utility.asyncStepLogger("Registering Server ...");
         }
 
         var content = {
@@ -394,8 +422,8 @@
           fireEvent("stateChange", asyncStateType.OPEN);
           pushSendDataQueue = [];
 
-          if (consoleLogging) {
-            Utility.stepLogger("Async is Ready ...");
+          if (asyncLogging) {
+            Utility.asyncStepLogger("Async is Ready ...");
           }
 
         } else {
@@ -405,7 +433,7 @@
 
       pushSendData = function(msg) {
         if (onSendLogging)
-          logger("Send", msg);
+          asyncLogger("Send", msg);
 
         if (asyncState === asyncStateType.OPEN) {
           socket.emit(msg);

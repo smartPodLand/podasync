@@ -16,7 +16,7 @@
      * @param {object} params Socket status + current msg + send queue
      * @return
      */
-    this.consoleLogger = function(params) {
+    this.asyncLogger = function(params) {
       var type = params.type,
         msg = params.msg,
         peerId = params.peerId,
@@ -159,8 +159,7 @@
      * @param {string} message Message to be logged in terminal
      * @return
      */
-    this.stepLogger = function(message) {
-
+    this.asyncStepLogger = function(message) {
       if (this.isNode()) {
         console.log("\x1b[46m\x1b[8m##\x1b[0m  \x1b[36m%s\x1b[0m", message);
       } else {

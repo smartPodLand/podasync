@@ -10,8 +10,8 @@ var params = {
   connectionCheckTimeout: 90000, // Socket connection live time on server
   connectionCheckTimeoutThreshold: 20000, // Socket Ping time threshold
   messageTtl: 5000, // Message time to live
-  reconnectOnClose: true, // auto connect to socket after socket close
-  consoleLogging: {
+  reconnectOnClose: false, // auto connect to socket after socket close
+  asyncLogging: {
     onFunction: true, // log main actions on console
     onMessageReceive: true, // log received messages on console
     onMessageSend: true // log sent messaged on console
@@ -21,6 +21,10 @@ var params = {
 var PID;
 
 var asyncClient = new Async(params);
+
+asyncClient.on("error", function(error) {
+  console.log(error);
+});
 
 asyncClient.asyncReady(function() {
   PID = asyncClient.getPeerId();
@@ -44,7 +48,6 @@ asyncClient.asyncReady(function() {
     /**
      * You can get async state changes here
      */
-    console.log("Currrent Async State => ", currentState);
   });
 
   asyncClient.on("message", function(msg, ack) {

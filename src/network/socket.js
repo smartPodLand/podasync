@@ -73,7 +73,11 @@
             eventCallback["error"](event);
           }
         } catch (error) {
-          throw new Error(error);
+          eventCallback["customError"]({
+            errorCode: 4000,
+            errorMessage: "ERROR in WEBSOCKET!",
+            errorEvent: error
+          });
         }
       },
 
@@ -119,7 +123,11 @@
             socket.send(JSON.stringify(data));
           }
         catch (error) {
-          throw new Error(error);
+          eventCallback["customError"]({
+            errorCode: 4004,
+            errorMessage: "Error in Socket sendData!",
+            errorEvent: error
+          });
         }
       };
 

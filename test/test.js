@@ -4,9 +4,9 @@ var PODSocket = require('../src/network/socket.js');
 var Async = require('../src/network/async.js');
 
 var SSO_TOKENS = {
-  TOKEN_1: "ed4be26a60c24ed594e266a2181424c5",
-  TOKEN_2: "c0866c4cc5274ea7ada6b01575b19d24",
-  TOKEN_3: "afa51d8291dc4072a0831d3a18cb5030"
+  TOKEN_1: "c0866c4cc5274ea7ada6b01575b19d24",
+  TOKEN_2: "afa51d8291dc4072a0831d3a18cb5030",
+  TOKEN_3: "ed4be26a60c24ed594e266a2181424c5"
 }
 
 var params = {
