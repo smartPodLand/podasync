@@ -19,7 +19,6 @@
     if (typeof(require) !== "undefined" && typeof(exports) !== "undefined") {
       PodSocketClass = require('./socket.js');
       PodUtility = require('../utility/utility.js');
-      http = require('http');
     } else {
       PodSocketClass = POD.Socket;
       PodUtility = POD.Utility;
