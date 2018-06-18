@@ -3,18 +3,16 @@ var WebSocket = require('ws');
 var PODSocket = require('../src/network/socket.js');
 var Async = require('../src/network/async.js');
 
-var SSO_TOKENS = {
-  TOKEN_1: "c0866c4cc5274ea7ada6b01575b19d24",
-  TOKEN_2: "afa51d8291dc4072a0831d3a18cb5030",
-  TOKEN_3: "ed4be26a60c24ed594e266a2181424c5"
+var DEVICE_IDS = {
+  DEVICEID_1: "208bf7f8671eef0759bca69621835e3b", // Zamani
+  DEVICEID_2: "3d943476a879dcf609f79a5ec736bedc", // Barzegar
+  DEVICEID_3: "cbebc89039c39036045984eabd79ca27" // Felfeli
 }
 
 var params = {
   socketAddress: "ws://172.16.106.26:8003/ws",
-  ssoHost: "172.16.110.76",
-  ssoGrantDevicesAddress: "/oauth2/grants/devices",
   serverName: "chat-server",
-  token: SSO_TOKENS.TOKEN_1,
+  deviceId: DEVICE_IDS.DEVICEID_1,
   reconnectOnClose: false,
   consoleLogging: {
     // onFunction: true,
@@ -26,8 +24,8 @@ var params = {
 var params2 = Object.assign({}, params);
 var params3 = Object.assign({}, params);
 
-params2.token = SSO_TOKENS.TOKEN_2;
-params3.token = SSO_TOKENS.TOKEN_3;
+params2.deviceId = DEVICE_IDS.DEVICEID_2;
+params3.deviceId = DEVICE_IDS.DEVICEID_3;
 
 /**
 * Websocket Protocol
@@ -261,7 +259,7 @@ describe("POD Async Sending & Receiving Type 3", function() {
 * POD Async Sending & Receiving Type 5
 */
 describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() {
-  this.timeout(5000);
+  this.timeout(50000);
 
   var asyncClient1,
     asyncClient2,
@@ -303,9 +301,10 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() 
       };
     });
 
-    asyncClient2.on("message", function(msg, ack) {});
+    asyncClient2.on("message", function(msg) {
+    });
 
-    asyncClient1.on("message", function(msg, ack) {
+    asyncClient1.on("message", function(msg) {
       if (msg.senderId == peerId2) {
         done();
       }

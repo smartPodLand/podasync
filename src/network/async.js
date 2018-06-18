@@ -50,12 +50,7 @@
     };
 
     var appId = params.appId || "POD-Chat",
-      deviceId = (params.deviceId)
-        ? params.deviceId
-        : undefined,
-      token = params.token,
-      ssoGrantDevicesAddress = params.ssoGrantDevicesAddress,
-      ssoHost = params.ssoHost,
+      deviceId = params.deviceId,
       eventCallbacks = {
         connect: {},
         disconnect: {},
@@ -112,7 +107,6 @@
           type: type,
           msg: msg,
           peerId: peerId,
-          token: token,
           deviceId: deviceId,
           isSocketOpen: isSocketOpen,
           isDeviceRegister: isDeviceRegister,
@@ -130,7 +124,7 @@
           if (!isSocketOpen) {
             fireEvent("error", {
               errorCode: 4001,
-              errorMessage: "Can not open Socket after 65 seconds!"
+              errorMessage: "Can not open Socket!"
             });
           }
         }, 65000);
@@ -172,16 +166,20 @@
 
             socketReconnectCheck = setTimeout(function() {
               if (!isSocketOpen) {
-                // throw new Error("Can Not Open Socket!");
-                console.log("Can Not Open Socket!");
+                fireEvent("error", {
+                  errorCode: 4001,
+                  errorMessage: "Can not open Socket!"
+                });
               }
             }, 65000);
 
           } else {
             socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
             socketReconnectCheck && clearTimeout(socketReconnectCheck);
-            // throw new Error("Socket Closed!");
-            // console.log("Socket Closed!");
+              fireEvent("error", {
+                errorCode: 4005,
+                errorMessage: "Socket Closed!"
+              });
           }
 
         });
@@ -211,8 +209,7 @@
             pushSendData({
               type: asyncMessageType.ACK,
               content: {
-                receivers: [msg.senderId],
-                messageId: msg.id
+                messageId: msg.id,
               }
             });
           }
@@ -224,7 +221,7 @@
             break;
 
           case asyncMessageType.SERVER_REGISTER:
-            handleServerRegisterMessage(msg, ack);
+            handleServerRegisterMessage(msg);
             break;
 
           case asyncMessageType.DEVICE_REGISTER:
@@ -237,7 +234,8 @@
 
           case asyncMessageType.MESSAGE_ACK_NEEDED:
           case asyncMessageType.MESSAGE_SENDER_ACK_NEEDED:
-            fireEvent("message", msg, ack);
+            ack();
+            fireEvent("message", msg);
             break;
 
           case asyncMessageType.ACK:
@@ -258,90 +256,13 @@
         }
       },
 
-      getDeviceIdWithToken = function(callback) {
-
-        if (isNode) {
-          var options = {
-            host: ssoHost,
-            path: ssoGrantDevicesAddress,
-            method: "GET",
-            headers: {
-              "Authorization": "Bearer " + token
-            }
-          };
-
-          http.get(options, function(response) {
-            var resultText = '';
-
-            response.on('data', function(data) {
-              resultText += data;
-            });
-
-            response.on('end', function() {
-              var devices = JSON.parse(resultText).devices;
-              if (devices.length > 0) {
-                for (var i = 0; i < devices.length; i++) {
-                  if (devices[i].current) {
-                    deviceId = devices[i].uid;
-                    break;
-                  }
-                }
-
-                if (!deviceId) {
-                  fireEvent("error", {
-                    errorCode: 4003,
-                    errorMessage: "Invalid Token!"
-                  });
-                } else {
-                  callback();
-                }
-              }
-            });
-          });
-
-        } else {
-          var request = new XMLHttpRequest();
-          request.open("GET", "http://" + ssoHost + ssoGrantDevicesAddress, true);
-          request.setRequestHeader("Authorization", "Bearer " + token);
-          request.send();
-
-          request.onreadystatechange = function() {
-            if (request.readyState == 4 && request.status == 200) {
-              var response = request.responseText;
-
-              var devices = JSON.parse(response).devices;
-
-              if (devices.length > 0) {
-                for (var i = 0; i < devices.length; i++) {
-                  if (devices[i].current) {
-                    deviceId = devices[i].uid;
-                    break;
-                  }
-                }
-
-                if (!deviceId) {
-                  fireEvent("error", {
-                    errorCode: 4003,
-                    errorMessage: "Invalid Token!"
-                  });
-                } else {
-                  callback();
-                }
-              }
-            }
-          }
-        }
-      },
-
       handlePingMessage = function(msg) {
         if (msg.content) {
           if (deviceId === undefined) {
-            getDeviceIdWithToken(function() {
-              if (asyncLogging) {
-                Utility.asyncStepLogger("Device ID =>\t" + deviceId);
-              }
-              registerDevice();
-            });
+              fireEvent("error", {
+                errorCode: 4003,
+                errorMessage: "Device Id is not present!"
+              });
           } else {
             registerDevice();
           }
@@ -410,7 +331,7 @@
         }, connectionRetryInterval);
       },
 
-      handleServerRegisterMessage = function(msg, ack) {
+      handleServerRegisterMessage = function(msg) {
         if (msg.senderName && msg.senderName === serverName) {
           isServerRegister = true;
 
@@ -553,8 +474,8 @@
       serverName = newServerName;
     }
 
-    this.setToken = function(newToken) {
-      token = newToken;
+    this.setDeviceId = function(newDeviceId) {
+      deviceId = newDeviceId;
     }
 
     this.close = function() {
