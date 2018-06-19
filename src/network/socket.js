@@ -50,17 +50,17 @@
             var messageData = JSON.parse(event.data);
             eventCallback["message"](messageData);
 
-            lastSentMessageTimeoutId && clearTimeout(lastSentMessageTimeoutId);
             lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
 
             lastReceivedMessageTime = new Date();
 
             lastReceivedMessageTimeoutId = setTimeout(function() {
               var currentDate = new Date();
-              if (currentDate - lastReceivedMessageTime > connectionCheckTimeout - connectionCheckTimeoutThreshold) { //-JSTimeLatency
-                ping();
+
+              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout + connectionCheckTimeoutThreshold) {
+                socket.close();
               }
-            }, connectionCheckTimeout - connectionCheckTimeoutThreshold);
+            }, connectionCheckTimeout + connectionCheckTimeoutThreshold);
           }
 
           socket.onclose = function(event) {
@@ -73,22 +73,12 @@
             eventCallback["error"](event);
           }
         } catch (error) {
-          eventCallback["customError"]({
-            errorCode: 4000,
-            errorMessage: "ERROR in WEBSOCKET!",
-            errorEvent: error
-          });
+          eventCallback["customError"]({errorCode: 4000, errorMessage: "ERROR in WEBSOCKET!", errorEvent: error});
         }
       },
 
       ping = function() {
         sendData({type: 0});
-
-        lastSentMessageTimeoutId = setTimeout(function() {
-          if (lastSentMessageTime - lastReceivedMessageTime > connectionCheckTimeout + connectionCheckTimeoutThreshold) {
-            socket.close();
-          }
-        }, connectionCheckTimeout + connectionCheckTimeoutThreshold);
       },
 
       waitForSocketToConnect = function(callback) {
@@ -112,7 +102,16 @@
           type: params.type
         };
 
+        lastSentMessageTimeoutId && clearTimeout(lastSentMessageTimeoutId);
+
         lastSentMessageTime = new Date();
+
+        lastSentMessageTimeoutId = setTimeout(function() {
+          var currentDate = new Date();
+          if (currentDate - lastSentMessageTime >= connectionCheckTimeout - connectionCheckTimeoutThreshold) {
+            ping();
+          }
+        }, connectionCheckTimeout - connectionCheckTimeoutThreshold);
 
         try {
           if (params.content) {
@@ -123,11 +122,7 @@
             socket.send(JSON.stringify(data));
           }
         catch (error) {
-          eventCallback["customError"]({
-            errorCode: 4004,
-            errorMessage: "Error in Socket sendData!",
-            errorEvent: error
-          });
+          eventCallback["customError"]({errorCode: 4004, errorMessage: "Error in Socket sendData!", errorEvent: error});
         }
       };
 

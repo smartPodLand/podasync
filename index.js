@@ -11,12 +11,22 @@ var params = {
   }
 };
 
-var PID;
+var PID,
+  sendMessageInterval;
 
 var asyncClient = new Async(params);
 
 asyncClient.on("error", function(error) {
   console.log(error);
+  switch (error.errorCode) {
+    // Socket Closed
+    case 4005:
+      clearInterval(sendMessageInterval);
+      break;
+
+    default:
+      break;
+  }
 });
 
 asyncClient.asyncReady(function() {
@@ -25,15 +35,17 @@ asyncClient.asyncReady(function() {
   var newCustomMessage = {
     type: 5,
     content: {
-      receivers: ['118833'],
+      receivers: ['126833'],
       content: "Hello!"
     }
   };
 
   /**
-   * Send Message
+   * Send Message Every 5 Seconds
    */
-  asyncClient.send(newCustomMessage);
+  sendMessageInterval = setInterval(function() {
+    asyncClient.send(newCustomMessage);
+  }, 5000);
 
   asyncClient.on("stateChange", function(currentState) {
     /**
