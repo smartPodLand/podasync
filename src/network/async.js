@@ -98,6 +98,8 @@
      *******************************************************/
 
     var init = function() {
+        asyncState = asyncStateType.CONNECTING;
+        fireEvent("stateChange", asyncState);
         initSocket();
       },
 
@@ -135,6 +137,9 @@
 
           isSocketOpen = true;
           retryStep = 1;
+
+          asyncState = asyncStateType.OPEN;
+          fireEvent("stateChange", asyncState);
         });
 
         socket.on("message", function(msg) {
@@ -149,14 +154,17 @@
           isDeviceRegister = false;
           oldPeerId = peerId;
           asyncState = asyncStateType.CLOSED;
+          fireEvent("stateChange", asyncState);
           fireEvent("disconnect", event);
-          fireEvent("stateChange", asyncStateType.CLOSED);
 
           if (reconnectOnClose) {
             socketReconnectRetryInterval = setTimeout(function() {
               if (asyncLogging) {
                 Utility.asyncStepLogger("Reconnecting after " + retryStep + "s ...");
               }
+
+              asyncState = asyncStateType.CONNECTING;
+              fireEvent("stateChange", asyncState);
               socket.connect();
             }, 1000 * retryStep);
             retryStep *= 2;
@@ -169,16 +177,22 @@
                   errorCode: 4001,
                   errorMessage: "Can not open Socket!"
                 });
+
+                asyncState = asyncStateType.CLOSED;
+                fireEvent("stateChange", asyncState);
               }
             }, 65000);
 
           } else {
             socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
             socketReconnectCheck && clearTimeout(socketReconnectCheck);
-              fireEvent("error", {
-                errorCode: 4005,
-                errorMessage: "Socket Closed!"
-              });
+            fireEvent("error", {
+              errorCode: 4005,
+              errorMessage: "Socket Closed!"
+            });
+
+            asyncState = asyncStateType.CLOSED;
+            fireEvent("stateChange", asyncState);
           }
 
         });
@@ -208,7 +222,7 @@
             pushSendData({
               type: asyncMessageType.ACK,
               content: {
-                messageId: msg.id,
+                messageId: msg.id
               }
             });
           }
@@ -258,10 +272,10 @@
       handlePingMessage = function(msg) {
         if (msg.content) {
           if (deviceId === undefined) {
-              fireEvent("error", {
-                errorCode: 4003,
-                errorMessage: "Device Id is not present!"
-              });
+            fireEvent("error", {
+              errorCode: 4003,
+              errorMessage: "Device Id is not present!"
+            });
           } else {
             registerDevice();
           }
@@ -303,7 +317,7 @@
 
         if (isServerRegister && peerId === oldPeerId) {
           asyncState = asyncStateType.OPEN;
-          fireEvent("stateChange", asyncStateType.OPEN);
+          fireEvent("stateChange", asyncState);
           isServerRegister = true;
           pushSendDataQueueHandler();
         } else {
@@ -339,7 +353,7 @@
           }
 
           asyncState = asyncStateType.OPEN;
-          fireEvent("stateChange", asyncStateType.OPEN);
+          fireEvent("stateChange", asyncState);
 
           pushSendDataQueue = [];
 
@@ -480,7 +494,7 @@
 
     this.close = function() {
       asyncState = asyncStateType.CLOSED;
-      fireEvent("stateChange", asyncStateType.CLOSED);
+      fireEvent("stateChange", asyncState);
       isDeviceRegister = false;
       isSocketOpen = false;
       socket.close();
@@ -493,7 +507,7 @@
       isDeviceRegister = false;
       isSocketOpen = false;
       asyncState = asyncStateType.CLOSED;
-      fireEvent("stateChange", asyncStateType.CLOSED);
+      fireEvent("stateChange", asyncState);
       pushSendDataQueue = [];
       ackCallback = {};
       clearTimeouts();
@@ -505,7 +519,7 @@
       isDeviceRegister = false;
       isSocketOpen = false;
       asyncState = asyncStateType.CLOSED;
-      fireEvent("stateChange", asyncStateType.CLOSED);
+      fireEvent("stateChange", asyncState);
       clearTimeouts();
       socket.close();
       if (!reconnectOnClose)
