@@ -61,7 +61,7 @@
         isSocketOpen = params.isSocketOpen,
         isDeviceRegister = params.isDeviceRegister,
         isServerRegister = params.isServerRegister,
-        asyncState = params.asyncState,
+        socketState = params.socketState,
         pushSendDataQueue = params.pushSendDataQueue,
         BgColor;
 
@@ -101,7 +101,7 @@
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " IS SOCKET OPEN\t", isSocketOpen);
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE REGISTER\t", isDeviceRegister);
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " SERVER REGISTER\t", isServerRegister);
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " ASYNC STATE\t\t", asyncState);
+        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " SOCKET STATE\t", socketState);
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[" + FgColor + "m%s\x1b[0m ", " CURRENT MESSAGE\t", type);
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
 
@@ -148,7 +148,7 @@
         console.log("%c   IS SOCKET OPEN\t %c" + isSocketOpen, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
         console.log("%c   DEVICE REGISTER\t %c" + isDeviceRegister, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
         console.log("%c   SERVER REGISTER\t %c" + isServerRegister, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   ASYNC STATE\t\t %c" + asyncState, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
+        console.log("%c   SOCKET STATE\t %c" + socketState, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
         console.log("%c   CURRENT MESSAGE\t %c" + type, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #aa386d; font-weight: bold');
         console.log("%c\n", 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS);
 
