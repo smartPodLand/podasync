@@ -340,6 +340,7 @@
 
           asyncState = asyncStateType.OPEN;
           fireEvent("stateChange", asyncStateType.OPEN);
+
           pushSendDataQueue = [];
 
           if (asyncLogging) {
@@ -400,7 +401,7 @@
 
     this.on = function(eventName, callback) {
       if (eventCallbacks[eventName]) {
-        var id = new Date().getTime();
+        var id = Utility.generateUUID();
         eventCallbacks[eventName][id] = callback;
         return id;
       }
