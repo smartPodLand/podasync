@@ -6,8 +6,8 @@ var params = {
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    onMessageReceive: true, // log received messages on console
-    onMessageSend: true // log sent messaged on console
+    // onMessageReceive: true,  log received messages on console
+    // onMessageSend: true  log sent messaged on console
   }
 };
 
@@ -19,7 +19,7 @@ var asyncClient = new Async(params);
 asyncClient.on("error", function(error) {
   console.log(error);
   switch (error.errorCode) {
-    // Socket Closed
+      // Socket Closed
     case 4005:
       clearInterval(sendMessageInterval);
       break;
@@ -29,7 +29,7 @@ asyncClient.on("error", function(error) {
   }
 });
 
-asyncClient.asyncReady(function() {
+asyncClient.on("asyncReady", function() {
   PID = asyncClient.getPeerId();
 
   var newCustomMessage = {

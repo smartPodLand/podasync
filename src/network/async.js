@@ -41,11 +41,18 @@
       ERROR_MESSAGE: -99
     };
 
-    var asyncStateType = {
+    var socketStateType = {
       CONNECTING: 0, // The connection is not yet open.
       OPEN: 1, // The connection is open and ready to communicate.
       CLOSING: 2, // The connection is in the process of closing.
       CLOSED: 3 // The connection is closed or couldn't be opened.
+    };
+
+    var asyncStateType = {
+      NOT_ACTIVE: 0,
+      REGISTERING_DEVICE: 1,
+      REGISTERING_SERVER: 2,
+      READY_FOR_CHAT: 3
     };
 
     var appId = params.appId || "POD-Chat",
@@ -65,7 +72,8 @@
       isSocketOpen = false,
       isDeviceRegister = false,
       isServerRegister = false,
-      asyncState = asyncStateType.CONNECTING,
+      socketState = socketStateType.CONNECTING,
+      asyncState = "",
       registerServerTimeoutId,
       registerDeviceTimeoutId,
       checkIfSocketHasOpennedTimeoutId,
@@ -98,8 +106,6 @@
      *******************************************************/
 
     var init = function() {
-        asyncState = asyncStateType.CONNECTING;
-        fireEvent("stateChange", asyncState);
         initSocket();
       },
 
@@ -112,7 +118,7 @@
           isSocketOpen: isSocketOpen,
           isDeviceRegister: isDeviceRegister,
           isServerRegister: isServerRegister,
-          asyncState: asyncState,
+          socketState: socketState,
           pushSendDataQueue: pushSendDataQueue
         });
       },
@@ -138,8 +144,8 @@
           isSocketOpen = true;
           retryStep = 1;
 
-          asyncState = asyncStateType.OPEN;
-          fireEvent("stateChange", asyncState);
+          socketState = socketStateType.OPEN;
+          fireEvent("stateChange", socketState);
         });
 
         socket.on("message", function(msg) {
@@ -153,8 +159,8 @@
           isSocketOpen = false;
           isDeviceRegister = false;
           oldPeerId = peerId;
-          asyncState = asyncStateType.CLOSED;
-          fireEvent("stateChange", asyncState);
+          socketState = socketStateType.CLOSED;
+          fireEvent("stateChange", socketState);
           fireEvent("disconnect", event);
 
           if (reconnectOnClose) {
@@ -163,8 +169,8 @@
                 Utility.asyncStepLogger("Reconnecting after " + retryStep + "s ...");
               }
 
-              asyncState = asyncStateType.CONNECTING;
-              fireEvent("stateChange", asyncState);
+              socketState = socketStateType.CONNECTING;
+              fireEvent("stateChange", socketState);
               socket.connect();
             }, 1000 * retryStep);
             retryStep *= 2;
@@ -178,8 +184,8 @@
                   errorMessage: "Can not open Socket!"
                 });
 
-                asyncState = asyncStateType.CLOSED;
-                fireEvent("stateChange", asyncState);
+                socketState = socketStateType.CLOSED;
+                fireEvent("stateChange", socketState);
               }
             }, 65000);
 
@@ -191,8 +197,8 @@
               errorMessage: "Socket Closed!"
             });
 
-            asyncState = asyncStateType.CLOSED;
-            fireEvent("stateChange", asyncState);
+            socketState = socketStateType.CLOSED;
+            fireEvent("stateChange", socketState);
           }
 
         });
@@ -316,8 +322,9 @@
         }
 
         if (isServerRegister && peerId === oldPeerId) {
-          asyncState = asyncStateType.OPEN;
-          fireEvent("stateChange", asyncState);
+          socketState = socketStateType.OPEN;
+          fireEvent("stateChange", socketState);
+          fireEvent("asyncReady");
           isServerRegister = true;
           pushSendDataQueueHandler();
         } else {
@@ -352,8 +359,9 @@
             clearTimeout(registerServerTimeoutId);
           }
 
-          asyncState = asyncStateType.OPEN;
-          fireEvent("stateChange", asyncState);
+          socketState = socketStateType.OPEN;
+          fireEvent("stateChange", socketState);
+          fireEvent("asyncReady");
 
           pushSendDataQueue = [];
 
@@ -370,7 +378,7 @@
         if (onSendLogging)
           asyncLogger("Send", msg);
 
-        if (asyncState === asyncStateType.OPEN) {
+        if (socketState === socketStateType.OPEN) {
           socket.emit(msg);
         } else {
           pushSendDataQueue.push(msg);
@@ -388,7 +396,7 @@
       },
 
       pushSendDataQueueHandler = function() {
-        while (pushSendDataQueue.length > 0 && asyncState === asyncStateType.OPEN) {
+        while (pushSendDataQueue.length > 0 && socketState === socketStateType.OPEN) {
           var msg = pushSendDataQueue.splice(0, 1)[0];
           pushSendData(msg);
         }
@@ -419,25 +427,8 @@
         eventCallbacks[eventName][id] = callback;
         return id;
       }
-      if (eventName === "connect" && asyncState === asyncStateType.OPEN) {
+      if (eventName === "connect" && socketState === socketStateType.OPEN) {
         callback(peerId);
-      }
-    }
-
-    this.asyncReady = function asyncReadyCallback(callback) {
-      if (asyncReadyTimeoutId)
-        clearTimeout(asyncReadyTimeoutId);
-
-      if (asyncState === asyncStateType.OPEN) {
-        callback();
-      } else {
-        asyncReadyTimeoutId = setTimeout(function() {
-          if (asyncState === asyncStateType.OPEN) {
-            callback();
-          } else {
-            asyncReadyCallback(callback);
-          }
-        }, 10);
       }
     }
 
@@ -469,7 +460,7 @@
     }
 
     this.getAsyncState = function() {
-      return asyncState;
+      return socketState;
     }
 
     this.getSendQueue = function() {
@@ -493,21 +484,21 @@
     }
 
     this.close = function() {
-      asyncState = asyncStateType.CLOSED;
-      fireEvent("stateChange", asyncState);
+      socketState = socketStateType.CLOSED;
+      fireEvent("stateChange", socketState);
       isDeviceRegister = false;
       isSocketOpen = false;
       socket.close();
     }
 
     this.logout = function() {
+      socketState = socketStateType.CLOSED;
+      fireEvent("stateChange", socketState);
       oldPeerId = peerId;
       peerId = undefined;
       isServerRegister = false;
       isDeviceRegister = false;
       isSocketOpen = false;
-      asyncState = asyncStateType.CLOSED;
-      fireEvent("stateChange", asyncState);
       pushSendDataQueue = [];
       ackCallback = {};
       clearTimeouts();
@@ -515,11 +506,11 @@
     }
 
     this.reconnectSocket = function() {
+      socketState = socketStateType.CLOSED;
+      fireEvent("stateChange", socketState);
       oldPeerId = peerId;
       isDeviceRegister = false;
       isSocketOpen = false;
-      asyncState = asyncStateType.CLOSED;
-      fireEvent("stateChange", asyncState);
       clearTimeouts();
       socket.close();
       if (!reconnectOnClose)

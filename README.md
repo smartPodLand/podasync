@@ -25,7 +25,7 @@ var asyncClient = new Async(params);
 /**
 * Write your code inside asyncReady() function
 */
-asyncClient.asyncReady(function() {
+asyncClient.on("asyncReady", function() {
 
 /**
 * A Custom Message To be Send Through DIRANA
