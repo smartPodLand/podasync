@@ -17,8 +17,8 @@
 
     var address = params.socketAddress,
       wsConnectionWaitTime = params.wsConnectionWaitTime || 500,
-      connectionCheckTimeout = params.connectionCheckTimeout || 90000,
-      connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold || 20000,
+      connectionCheckTimeout = params.connectionCheckTimeout || 10000,
+      connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold || 2000,
       eventCallback = {},
       socket,
       waitForSocketToConnectTimeoutId,
@@ -26,7 +26,8 @@
       lastReceivedMessageTimeoutId,
       lastSentMessageTime,
       lastSentMessageTimeoutId,
-      JSTimeLatency = 100;
+      JSTimeLatency = 100,
+      socketRealTimeStatusInterval;
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
@@ -39,6 +40,11 @@
       connect = function() {
         try {
           socket = new WebSocket(address, []);
+
+          socketRealTimeStatusInterval && clearInterval(socketRealTimeStatusInterval);
+          socketRealTimeStatusInterval = setInterval(function() {
+            eventCallback["socketReadyState"](socket.readyState);
+          }, 100);
 
           socket.onopen = function(event) {
             waitForSocketToConnect(function() {

@@ -136,6 +136,11 @@
           }
         }, 65000);
 
+        socket.on("socketReadyState", function(state) {
+          socketState = state;
+          fireEvent("stateChange", socketState);
+        });
+
         socket.on("open", function() {
           checkIfSocketHasOpennedTimeoutId && clearTimeout(checkIfSocketHasOpennedTimeoutId);
           socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
@@ -173,7 +178,9 @@
               fireEvent("stateChange", socketState);
               socket.connect();
             }, 1000 * retryStep);
-            retryStep *= 2;
+
+            if (retryStep < 60)
+              retryStep *= 2;
 
             socketReconnectCheck && clearTimeout(socketReconnectCheck);
 
@@ -506,16 +513,12 @@
     }
 
     this.reconnectSocket = function() {
-      socketState = socketStateType.CLOSED;
-      fireEvent("stateChange", socketState);
       oldPeerId = peerId;
       isDeviceRegister = false;
       isSocketOpen = false;
       clearTimeouts();
-      socket.close();
-      if (!reconnectOnClose)
-        socket.connect();
-      }
+      socket.connect();
+    }
 
     init();
   }

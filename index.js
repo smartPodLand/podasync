@@ -17,9 +17,8 @@ var PID,
 var asyncClient = new Async(params);
 
 asyncClient.on("error", function(error) {
-  console.log(error);
   switch (error.errorCode) {
-      // Socket Closed
+    // Socket Closed
     case 4005:
       clearInterval(sendMessageInterval);
       break;
@@ -29,33 +28,47 @@ asyncClient.on("error", function(error) {
   }
 });
 
+/**
+ * Write your code here
+ */
 asyncClient.on("asyncReady", function() {
   PID = asyncClient.getPeerId();
-
-  var newCustomMessage = {
-    type: 5,
-    content: {
-      receivers: ['126833'],
-      content: "Hello!"
-    }
-  };
-
-  /**
-   * Send Message Every 5 Seconds
-   */
-  sendMessageInterval = setInterval(function() {
-    asyncClient.send(newCustomMessage);
-  }, 5000);
-
-  asyncClient.on("stateChange", function(currentState) {
-    /**
-     * You can get async state changes here
-     */
-  });
 
   asyncClient.on("message", function(msg, ack) {
     /**
      * You can handle received message here
      */
   });
+});
+
+/**
+ * You can get async state changes here
+ */
+asyncClient.on("stateChange", function(currentState) {
+  switch (currentState) {
+    case 1:
+      /**
+       * Send Message Every 5 Seconds
+       */
+      if (!sendMessageInterval) {
+        sendMessageInterval = setInterval(function() {
+          asyncClient.send({
+            type: 5,
+            content: {
+              receivers: ['126833'],
+              content: "Hello!"
+            }
+          });
+        }, 5000);
+      }
+
+      break;
+
+    case 0:
+    case 2:
+    case 3:
+      clearInterval(sendMessageInterval);
+      break;
+
+  }
 });
