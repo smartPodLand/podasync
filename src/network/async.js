@@ -215,7 +215,7 @@
           fireEvent("error", {
             errorCode: error.target._closeCode,
             errorMessage: error.message,
-            errorEvent: error
+            errorEvent: error.error
           });
         });
       },
