@@ -43,8 +43,12 @@
 
           socketRealTimeStatusInterval && clearInterval(socketRealTimeStatusInterval);
           socketRealTimeStatusInterval = setInterval(function() {
-            eventCallback["socketReadyState"](socket.readyState);
-          }, 500);
+            switch (socket.readyState) {
+              case 2:
+                onCloseHandler(null);
+                break;
+            }
+          }, 1000);
 
           socket.onopen = function(event) {
             waitForSocketToConnect(function() {
@@ -63,16 +67,14 @@
             lastReceivedMessageTimeoutId = setTimeout(function() {
               var currentDate = new Date();
 
-              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout + connectionCheckTimeoutThreshold) {
+              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout + connectionCheckTimeoutThreshold - JSTimeLatency) {
                 socket.close();
               }
             }, connectionCheckTimeout + connectionCheckTimeoutThreshold);
           }
 
           socket.onclose = function(event) {
-            lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
-            lastSentMessageTimeoutId && clearTimeout(lastSentMessageTimeoutId);
-            eventCallback["close"](event);
+            onCloseHandler(event);
           }
 
           socket.onerror = function(event) {
@@ -81,6 +83,12 @@
         } catch (error) {
           eventCallback["customError"]({errorCode: 4000, errorMessage: "ERROR in WEBSOCKET!", errorEvent: error});
         }
+      },
+
+      onCloseHandler = function(event) {
+          lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
+          lastSentMessageTimeoutId && clearTimeout(lastSentMessageTimeoutId);
+          eventCallback["close"](event);
       },
 
       ping = function() {
@@ -114,7 +122,7 @@
 
         lastSentMessageTimeoutId = setTimeout(function() {
           var currentDate = new Date();
-          if (currentDate - lastSentMessageTime >= connectionCheckTimeout - connectionCheckTimeoutThreshold) {
+          if (currentDate - lastSentMessageTime >= connectionCheckTimeout - connectionCheckTimeoutThreshold - JSTimeLatency) {
             ping();
           }
         }, connectionCheckTimeout - connectionCheckTimeoutThreshold);

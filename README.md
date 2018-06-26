@@ -38,17 +38,19 @@ asyncClient.on("asyncReady", function() {
     }
   };
 
-/**
-* Sending Message
-*/
+  /**
+  * Sending Message
+  */
   asyncClient.send(customMessage);
+
+});
+
 
 /**
 * Listening to responses came from DIRANA
 */
-  asyncClient.on("message", function(msg, ack) {
-    console.log(msg);
-  });
+asyncClient.on("message", function(msg, ack) {
+  console.log(msg);
 });
 ```
 

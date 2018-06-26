@@ -48,13 +48,6 @@
       CLOSED: 3 // The connection is closed or couldn't be opened.
     };
 
-    var asyncStateType = {
-      NOT_ACTIVE: 0,
-      REGISTERING_DEVICE: 1,
-      REGISTERING_SERVER: 2,
-      READY_FOR_CHAT: 3
-    };
-
     var appId = params.appId || "POD-Chat",
       deviceId = params.deviceId,
       eventCallbacks = {
@@ -136,17 +129,6 @@
           }
         }, 65000);
 
-        socket.on("socketReadyState", function(state) {
-          socketState = state;
-
-          fireEvent("stateChange", {
-            socketState: socketState,
-            deviceRegister: isDeviceRegister,
-            serverRegister: isServerRegister,
-            peerId: peerId
-          });
-        });
-
         socket.on("open", function() {
           checkIfSocketHasOpennedTimeoutId && clearTimeout(checkIfSocketHasOpennedTimeoutId);
           socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
@@ -158,6 +140,7 @@
           socketState = socketStateType.OPEN;
           fireEvent("stateChange", {
             socketState: socketState,
+            timeUntilReconnect: 0,
             deviceRegister: isDeviceRegister,
             serverRegister: isServerRegister,
             peerId: peerId
@@ -175,28 +158,33 @@
           isSocketOpen = false;
           isDeviceRegister = false;
           oldPeerId = peerId;
+
           socketState = socketStateType.CLOSED;
           fireEvent("stateChange", {
             socketState: socketState,
+            timeUntilReconnect: 0,
             deviceRegister: isDeviceRegister,
             serverRegister: isServerRegister,
             peerId: peerId
           });
+
           fireEvent("disconnect", event);
 
           if (reconnectOnClose) {
-            socketReconnectRetryInterval = setTimeout(function() {
-              if (asyncLogging) {
-                Utility.asyncStepLogger("Reconnecting after " + retryStep + "s ...");
-              }
+            if (asyncLogging) {
+              Utility.asyncStepLogger("Reconnecting after " + retryStep + "s ...");
+            }
 
-              socketState = socketStateType.CONNECTING;
-              fireEvent("stateChange", {
-                socketState: socketState,
-                deviceRegister: isDeviceRegister,
-                serverRegister: isServerRegister,
-                peerId: peerId
-              });
+            socketState = socketStateType.CLOSED;
+            fireEvent("stateChange", {
+              socketState: socketState,
+              timeUntilReconnect: 1000 * retryStep,
+              deviceRegister: isDeviceRegister,
+              serverRegister: isServerRegister,
+              peerId: peerId
+            });
+
+            socketReconnectRetryInterval = setTimeout(function() {
               socket.connect();
             }, 1000 * retryStep);
 
@@ -215,6 +203,7 @@
                 socketState = socketStateType.CLOSED;
                 fireEvent("stateChange", {
                   socketState: socketState,
+                  // timeUntilReconnect: 0,
                   deviceRegister: isDeviceRegister,
                   serverRegister: isServerRegister,
                   peerId: peerId
@@ -233,6 +222,7 @@
             socketState = socketStateType.CLOSED;
             fireEvent("stateChange", {
               socketState: socketState,
+              timeUntilReconnect: 0,
               deviceRegister: isDeviceRegister,
               serverRegister: isServerRegister,
               peerId: peerId
@@ -360,17 +350,28 @@
         }
 
         if (isServerRegister && peerId === oldPeerId) {
+          fireEvent("asyncReady");
+          isServerRegister = true;
+          pushSendDataQueueHandler();
+
           socketState = socketStateType.OPEN;
           fireEvent("stateChange", {
             socketState: socketState,
+            timeUntilReconnect: 0,
             deviceRegister: isDeviceRegister,
             serverRegister: isServerRegister,
             peerId: peerId
           });
-          fireEvent("asyncReady");
-          isServerRegister = true;
-          pushSendDataQueueHandler();
         } else {
+          socketState = socketStateType.OPEN;
+          fireEvent("stateChange", {
+            socketState: socketState,
+            timeUntilReconnect: 0,
+            deviceRegister: isDeviceRegister,
+            serverRegister: isServerRegister,
+            peerId: peerId
+          });
+
           registerServer();
         }
       },
@@ -405,13 +406,14 @@
           socketState = socketStateType.OPEN;
           fireEvent("stateChange", {
             socketState: socketState,
+            timeUntilReconnect: 0,
             deviceRegister: isDeviceRegister,
             serverRegister: isServerRegister,
             peerId: peerId
           });
           fireEvent("asyncReady");
 
-          pushSendDataQueue = [];
+          pushSendDataQueueHandler();
 
           if (asyncLogging) {
             Utility.asyncStepLogger("Async is Ready ...");
@@ -532,26 +534,22 @@
     }
 
     this.close = function() {
+      isDeviceRegister = false;
+      isSocketOpen = false;
+
       socketState = socketStateType.CLOSED;
       fireEvent("stateChange", {
         socketState: socketState,
+        timeUntilReconnect: 0,
         deviceRegister: isDeviceRegister,
         serverRegister: isServerRegister,
         peerId: peerId
       });
-      isDeviceRegister = false;
-      isSocketOpen = false;
+
       socket.close();
     }
 
     this.logout = function() {
-      socketState = socketStateType.CLOSED;
-      fireEvent("stateChange", {
-        socketState: socketState,
-        deviceRegister: isDeviceRegister,
-        serverRegister: isServerRegister,
-        peerId: peerId
-      });
       oldPeerId = peerId;
       peerId = undefined;
       isServerRegister = false;
@@ -560,6 +558,16 @@
       pushSendDataQueue = [];
       ackCallback = {};
       clearTimeouts();
+
+      socketState = socketStateType.CLOSED;
+      fireEvent("stateChange", {
+        socketState: socketState,
+        timeUntilReconnect: 0,
+        deviceRegister: isDeviceRegister,
+        serverRegister: isServerRegister,
+        peerId: peerId
+      });
+
       socket.close();
     }
 

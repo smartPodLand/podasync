@@ -154,13 +154,13 @@ describe("POD Async Class Connecting", function() {
   });
 
   it("Should Connect to Async and Get Ready", function(done) {
-    asyncClient1.asyncReady(function() {
+    asyncClient1.on("asyncReady", function() {
       done();
     });
   });
 
   it("Should Connect to Async and Get Client's PeerID", function(done) {
-    asyncClient2.asyncReady(function() {
+    asyncClient2.on("asyncReady", function() {
       peerId = asyncClient2.getPeerId();
       if (peerId) {
         done();
@@ -192,7 +192,7 @@ describe("POD Async Sending & Receiving Type 3", function() {
 
   it("Should be Able to Send Type 3 Message from Client1 to Client2", function(done) {
     var msg = "";
-    asyncClient1.asyncReady(function recursive() {
+    asyncClient1.on("asyncReady", function recursive() {
       peerId1 = asyncClient1.getPeerId();
       if (msg.type !== undefined) {
         asyncClient1.send(msg);
@@ -203,7 +203,7 @@ describe("POD Async Sending & Receiving Type 3", function() {
       }
     });
 
-    asyncClient2.asyncReady(function() {
+    asyncClient2.on("asyncReady", function() {
       peerId2 = asyncClient2.getPeerId();
 
       msg = {
@@ -224,7 +224,7 @@ describe("POD Async Sending & Receiving Type 3", function() {
 
   it("Should be Able to Send Type 3 Message from Client2 to Client1", function(done) {
     var msg = "";
-    asyncClient2.asyncReady(function recursive() {
+    asyncClient2.on("asyncReady", function recursive() {
       peerId2 = asyncClient2.getPeerId();
       if (msg.type !== undefined) {
         asyncClient2.send(msg);
@@ -235,7 +235,7 @@ describe("POD Async Sending & Receiving Type 3", function() {
       }
     });
 
-    asyncClient1.asyncReady(function() {
+    asyncClient1.on("asyncReady", function() {
       peerId1 = asyncClient1.getPeerId();
 
       msg = {
@@ -278,7 +278,7 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() 
 
   it("Should be Able to Send Type 5 Message from Client1 to Client2 and Receive ACK", function(done) {
     var msg = "";
-    asyncClient1.asyncReady(function recursive() {
+    asyncClient1.on("asyncReady", function recursive() {
       peerId1 = asyncClient1.getPeerId();
       if (msg.type !== undefined) {
         asyncClient1.send(msg);
@@ -289,7 +289,7 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() 
       }
     });
 
-    asyncClient2.asyncReady(function() {
+    asyncClient2.on("asyncReady", function() {
       peerId2 = asyncClient2.getPeerId();
 
       msg = {
@@ -335,7 +335,7 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED) And Invoking 
 
   it("Should be Able to Send Type 5 Message from Client1 to Client2 and Receive ACK", function(done) {
     var msg = "";
-    asyncClient1.asyncReady(function recursive() {
+    asyncClient1.on("asyncReady", function recursive() {
       peerId1 = asyncClient1.getPeerId();
       if (msg.type !== undefined) {
         asyncClient1.send(msg, console.log("    ✴ \x1b[33m%s\x1b[0m", "ACK CallBack Function Invoked Successfully"));
@@ -346,7 +346,7 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED) And Invoking 
       }
     });
 
-    asyncClient2.asyncReady(function() {
+    asyncClient2.on("asyncReady", function() {
       peerId2 = asyncClient2.getPeerId();
 
       msg = {

@@ -16,9 +16,19 @@ var PID,
 
 var asyncClient = new Async(params);
 
+/**
+ * Write your code here
+ */
+asyncClient.on("asyncReady", function() {
+  PID = asyncClient.getPeerId();
+});
+
+/**
+ * Handle Async Error here
+ */
 asyncClient.on("error", function(error) {
   switch (error.errorCode) {
-    // Socket Closed
+      // Socket Closed
     case 4005:
       clearInterval(sendMessageInterval);
       break;
@@ -29,22 +39,15 @@ asyncClient.on("error", function(error) {
 });
 
 /**
- * Write your code here
+ * You can handle received message here
  */
-asyncClient.on("asyncReady", function() {
-  PID = asyncClient.getPeerId();
-
-  asyncClient.on("message", function(msg, ack) {
-    /**
-     * You can handle received message here
-     */
-  });
-});
+asyncClient.on("message", function(msg, ack) {});
 
 /**
  * You can get async state changes here
  */
 asyncClient.on("stateChange", function(currentState) {
+  console.log(currentState);
   switch (currentState) {
     case 1:
       /**
