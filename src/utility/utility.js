@@ -125,7 +125,7 @@
             if (typeof pushSendDataQueue[key] === 'object') {
               console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m-\x1b[0m \x1b[35m%s\x1b[0m", key);
               Object.keys(pushSendDataQueue[key]).forEach(function(k) {
-                console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t   \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", k, pushSendDataQueue[key][k]);
+                console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t   \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[36m%s\x1b[0m", k, JSON.stringify(pushSendDataQueue[key][k]));
               });
             } else {
               console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", key, pushSendDataQueue[key]);
@@ -172,7 +172,7 @@
             if (typeof pushSendDataQueue[key] === 'object') {
               console.log("%c \t-" + key, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #777');
               Object.keys(pushSendDataQueue[key]).forEach(function(k) {
-                console.log("%c \t  •" + k + " : %c" + pushSendDataQueue[key][k], 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #777', 'color: #f23; font-weight: bold');
+                console.log("%c \t  •" + k + " : %c" +  JSON.stringify(pushSendDataQueue[key][k]), 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #777', 'color: #f23; font-weight: bold');
               });
             } else {
               console.log("%c \t•" + key + " : %c" + pushSendDataQueue[key], 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #777', 'color: #f23; font-weight: bold');
