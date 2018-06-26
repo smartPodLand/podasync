@@ -140,7 +140,7 @@
           socketState = state;
 
           fireEvent("stateChange", {
-            socketState: state,
+            socketState: socketState,
             deviceRegister: isDeviceRegister,
             serverRegister: isServerRegister,
             peerId: peerId
@@ -157,7 +157,7 @@
 
           socketState = socketStateType.OPEN;
           fireEvent("stateChange", {
-            socketState: state,
+            socketState: socketState,
             deviceRegister: isDeviceRegister,
             serverRegister: isServerRegister,
             peerId: peerId
@@ -177,7 +177,7 @@
           oldPeerId = peerId;
           socketState = socketStateType.CLOSED;
           fireEvent("stateChange", {
-            socketState: state,
+            socketState: socketState,
             deviceRegister: isDeviceRegister,
             serverRegister: isServerRegister,
             peerId: peerId
@@ -192,7 +192,7 @@
 
               socketState = socketStateType.CONNECTING;
               fireEvent("stateChange", {
-                socketState: state,
+                socketState: socketState,
                 deviceRegister: isDeviceRegister,
                 serverRegister: isServerRegister,
                 peerId: peerId
@@ -214,7 +214,7 @@
 
                 socketState = socketStateType.CLOSED;
                 fireEvent("stateChange", {
-                  socketState: state,
+                  socketState: socketState,
                   deviceRegister: isDeviceRegister,
                   serverRegister: isServerRegister,
                   peerId: peerId
@@ -232,7 +232,7 @@
 
             socketState = socketStateType.CLOSED;
             fireEvent("stateChange", {
-              socketState: state,
+              socketState: socketState,
               deviceRegister: isDeviceRegister,
               serverRegister: isServerRegister,
               peerId: peerId
@@ -362,7 +362,7 @@
         if (isServerRegister && peerId === oldPeerId) {
           socketState = socketStateType.OPEN;
           fireEvent("stateChange", {
-            socketState: state,
+            socketState: socketState,
             deviceRegister: isDeviceRegister,
             serverRegister: isServerRegister,
             peerId: peerId
@@ -404,7 +404,7 @@
 
           socketState = socketStateType.OPEN;
           fireEvent("stateChange", {
-            socketState: state,
+            socketState: socketState,
             deviceRegister: isDeviceRegister,
             serverRegister: isServerRegister,
             peerId: peerId
@@ -534,7 +534,7 @@
     this.close = function() {
       socketState = socketStateType.CLOSED;
       fireEvent("stateChange", {
-        socketState: state,
+        socketState: socketState,
         deviceRegister: isDeviceRegister,
         serverRegister: isServerRegister,
         peerId: peerId
@@ -547,7 +547,7 @@
     this.logout = function() {
       socketState = socketStateType.CLOSED;
       fireEvent("stateChange", {
-        socketState: state,
+        socketState: socketState,
         deviceRegister: isDeviceRegister,
         serverRegister: isServerRegister,
         peerId: peerId
