@@ -44,7 +44,7 @@
           socketRealTimeStatusInterval && clearInterval(socketRealTimeStatusInterval);
           socketRealTimeStatusInterval = setInterval(function() {
             eventCallback["socketReadyState"](socket.readyState);
-          }, 100);
+          }, 500);
 
           socket.onopen = function(event) {
             waitForSocketToConnect(function() {
