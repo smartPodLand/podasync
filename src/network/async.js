@@ -138,7 +138,13 @@
 
         socket.on("socketReadyState", function(state) {
           socketState = state;
-          fireEvent("stateChange", socketState);
+
+          fireEvent("stateChange", {
+            socketState: state,
+            deviceRegister: isDeviceRegister,
+            serverRegister: isServerRegister,
+            peerId: peerId
+          });
         });
 
         socket.on("open", function() {
@@ -150,7 +156,12 @@
           retryStep = 1;
 
           socketState = socketStateType.OPEN;
-          fireEvent("stateChange", socketState);
+          fireEvent("stateChange", {
+            socketState: state,
+            deviceRegister: isDeviceRegister,
+            serverRegister: isServerRegister,
+            peerId: peerId
+          });
         });
 
         socket.on("message", function(msg) {
@@ -165,7 +176,12 @@
           isDeviceRegister = false;
           oldPeerId = peerId;
           socketState = socketStateType.CLOSED;
-          fireEvent("stateChange", socketState);
+          fireEvent("stateChange", {
+            socketState: state,
+            deviceRegister: isDeviceRegister,
+            serverRegister: isServerRegister,
+            peerId: peerId
+          });
           fireEvent("disconnect", event);
 
           if (reconnectOnClose) {
@@ -175,7 +191,12 @@
               }
 
               socketState = socketStateType.CONNECTING;
-              fireEvent("stateChange", socketState);
+              fireEvent("stateChange", {
+                socketState: state,
+                deviceRegister: isDeviceRegister,
+                serverRegister: isServerRegister,
+                peerId: peerId
+              });
               socket.connect();
             }, 1000 * retryStep);
 
@@ -192,7 +213,12 @@
                 });
 
                 socketState = socketStateType.CLOSED;
-                fireEvent("stateChange", socketState);
+                fireEvent("stateChange", {
+                  socketState: state,
+                  deviceRegister: isDeviceRegister,
+                  serverRegister: isServerRegister,
+                  peerId: peerId
+                });
               }
             }, 65000);
 
@@ -205,7 +231,12 @@
             });
 
             socketState = socketStateType.CLOSED;
-            fireEvent("stateChange", socketState);
+            fireEvent("stateChange", {
+              socketState: state,
+              deviceRegister: isDeviceRegister,
+              serverRegister: isServerRegister,
+              peerId: peerId
+            });
           }
 
         });
@@ -330,7 +361,12 @@
 
         if (isServerRegister && peerId === oldPeerId) {
           socketState = socketStateType.OPEN;
-          fireEvent("stateChange", socketState);
+          fireEvent("stateChange", {
+            socketState: state,
+            deviceRegister: isDeviceRegister,
+            serverRegister: isServerRegister,
+            peerId: peerId
+          });
           fireEvent("asyncReady");
           isServerRegister = true;
           pushSendDataQueueHandler();
@@ -367,7 +403,12 @@
           }
 
           socketState = socketStateType.OPEN;
-          fireEvent("stateChange", socketState);
+          fireEvent("stateChange", {
+            socketState: state,
+            deviceRegister: isDeviceRegister,
+            serverRegister: isServerRegister,
+            peerId: peerId
+          });
           fireEvent("asyncReady");
 
           pushSendDataQueue = [];
@@ -492,7 +533,12 @@
 
     this.close = function() {
       socketState = socketStateType.CLOSED;
-      fireEvent("stateChange", socketState);
+      fireEvent("stateChange", {
+        socketState: state,
+        deviceRegister: isDeviceRegister,
+        serverRegister: isServerRegister,
+        peerId: peerId
+      });
       isDeviceRegister = false;
       isSocketOpen = false;
       socket.close();
@@ -500,7 +546,12 @@
 
     this.logout = function() {
       socketState = socketStateType.CLOSED;
-      fireEvent("stateChange", socketState);
+      fireEvent("stateChange", {
+        socketState: state,
+        deviceRegister: isDeviceRegister,
+        serverRegister: isServerRegister,
+        peerId: peerId
+      });
       oldPeerId = peerId;
       peerId = undefined;
       isServerRegister = false;
