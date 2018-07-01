@@ -463,7 +463,11 @@
               eventCallbacks[eventName][id](param);
             }
           } catch (e) {
-          throw e;
+          fireEvent("error", {
+            errorCode: 999,
+            errorMessage: "Unknown ERROR!",
+            errorEvent: e
+          });
         }
       };
 
