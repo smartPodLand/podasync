@@ -18,7 +18,6 @@
     var address = params.socketAddress,
       wsConnectionWaitTime = params.wsConnectionWaitTime || 500,
       connectionCheckTimeout = params.connectionCheckTimeout || 10000,
-      connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold || 2000,
       eventCallback = {},
       socket,
       waitForSocketToConnectTimeoutId,
@@ -67,10 +66,10 @@
             lastReceivedMessageTimeoutId = setTimeout(function() {
               var currentDate = new Date();
 
-              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout + connectionCheckTimeoutThreshold - JSTimeLatency) {
+              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout - JSTimeLatency) {
                 socket.close();
               }
-            }, connectionCheckTimeout + connectionCheckTimeoutThreshold);
+            }, connectionCheckTimeout);
           }
 
           socket.onclose = function(event) {
@@ -122,10 +121,10 @@
 
         lastSentMessageTimeoutId = setTimeout(function() {
           var currentDate = new Date();
-          if (currentDate - lastSentMessageTime >= connectionCheckTimeout - connectionCheckTimeoutThreshold - JSTimeLatency) {
+          if (currentDate - lastSentMessageTime >= connectionCheckTimeout - JSTimeLatency) {
             ping();
           }
-        }, connectionCheckTimeout - connectionCheckTimeoutThreshold);
+        }, connectionCheckTimeout);
 
         try {
           if (params.content) {
