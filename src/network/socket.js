@@ -47,7 +47,7 @@
                 onCloseHandler(null);
                 break;
             }
-          }, 1000);
+          }, 2500);
 
           socket.onopen = function(event) {
             waitForSocketToConnect(function() {
@@ -66,7 +66,7 @@
             lastReceivedMessageTimeoutId = setTimeout(function() {
               var currentDate = new Date();
 
-              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout - JSTimeLatency) {
+              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout + JSTimeLatency) {
                 socket.close();
               }
             }, connectionCheckTimeout);
