@@ -203,7 +203,6 @@
                 socketState = socketStateType.CLOSED;
                 fireEvent("stateChange", {
                   socketState: socketState,
-                  // timeUntilReconnect: 0,
                   deviceRegister: isDeviceRegister,
                   serverRegister: isServerRegister,
                   peerId: peerId
@@ -571,6 +570,8 @@
         serverRegister: isServerRegister,
         peerId: peerId
       });
+
+      reconnectOnClose = false;
 
       socket.close();
     }
