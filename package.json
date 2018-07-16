@@ -1,6 +1,6 @@
 {
   "name": "podasync",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Fanap's POD Async service (DIRANA)",
   "main": "./src/network/async.js",
   "scripts": {
