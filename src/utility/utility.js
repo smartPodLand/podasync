@@ -90,10 +90,10 @@
           break;
       }
 
-      if (this.isNode()) {
+      if (typeof navigator == "undefined") {
         console.log("\n");
         console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
-        console.log("\x1b[" + BgColor + "m\x1b[8m###################\x1b[0m\x1b[37m\x1b[" + BgColor + "mS O C K E T    S T A T U S\x1b[0m\x1b[" + BgColor + "m\x1b[8m###################\x1b[0m");
+        console.log("\x1b[" + BgColor + "m\x1b[8m##################\x1b[0m\x1b[37m\x1b[" + BgColor + "m S O C K E T    S T A T U S \x1b[0m\x1b[" + BgColor + "m\x1b[8m##################\x1b[0m");
         console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t\t\t\t\t\t\t      \x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " PEER ID\t\t", peerId);
@@ -194,8 +194,8 @@
      * @return
      */
     this.asyncStepLogger = function(message) {
-      if (this.isNode()) {
-        console.log("\x1b[46m\x1b[8m##\x1b[0m  \x1b[36m%s\x1b[0m", message);
+      if (typeof navigator == "undefined") {
+        console.log("\x1b[90m    ☰ \x1b[0m\x1b[90m%s\x1b[0m", message);
       } else {
         console.log("%c   " + message, 'border-left: solid #08bbdb 10px; color: #08bbdb;');
       }

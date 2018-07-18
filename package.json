@@ -1,10 +1,10 @@
 {
   "name": "podasync",
-  "version": "2.3.4",
+  "version": "2.3.10",
   "description": "Fanap's POD Async service (DIRANA)",
   "main": "./src/network/async.js",
   "scripts": {
-    "test": "mocha --reporter spec"
+    "test": "mocha --reporter spec --exit"
   },
   "repository": {
     "type": "git",

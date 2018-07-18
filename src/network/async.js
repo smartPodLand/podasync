@@ -81,18 +81,18 @@
       socketReconnectRetryInterval,
       socketReconnectCheck,
       retryStep = 1,
-      reconnectOnClose = (typeof params.reconnectOnClose === "boolean")
-        ? params.reconnectOnClose
-        : true,
-      asyncLogging = (params.asyncLogging && typeof params.asyncLogging.onFunction === "boolean")
-        ? params.asyncLogging.onFunction
-        : false,
-      onReceiveLogging = (params.asyncLogging && typeof params.asyncLogging.onMessageReceive === "boolean")
-        ? params.asyncLogging.onMessageReceive
-        : false,
-      onSendLogging = (params.asyncLogging && typeof params.asyncLogging.onMessageSend === "boolean")
-        ? params.asyncLogging.onMessageSend
-        : false;
+      reconnectOnClose = (typeof params.reconnectOnClose === "boolean") ?
+      params.reconnectOnClose :
+      true,
+      asyncLogging = (params.asyncLogging && typeof params.asyncLogging.onFunction === "boolean") ?
+      params.asyncLogging.onFunction :
+      false,
+      onReceiveLogging = (params.asyncLogging && typeof params.asyncLogging.onMessageReceive === "boolean") ?
+      params.asyncLogging.onMessageReceive :
+      false,
+      onSendLogging = (params.asyncLogging && typeof params.asyncLogging.onMessageSend === "boolean") ?
+      params.asyncLogging.onMessageSend :
+      false;
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
@@ -118,7 +118,12 @@
 
       initSocket = function() {
 
-        socket = new PodSocketClass({socketAddress: params.socketAddress, wsConnectionWaitTime: params.wsConnectionWaitTime, connectionCheckTimeout: params.connectionCheckTimeout, connectionCheckTimeoutThreshold: params.connectionCheckTimeoutThreshold});
+        socket = new PodSocketClass({
+          socketAddress: params.socketAddress,
+          wsConnectionWaitTime: params.wsConnectionWaitTime,
+          connectionCheckTimeout: params.connectionCheckTimeout,
+          connectionCheckTimeoutThreshold: params.connectionCheckTimeoutThreshold
+        });
 
         checkIfSocketHasOpennedTimeoutId = setTimeout(function() {
           if (!isSocketOpen) {
@@ -172,7 +177,7 @@
 
           if (reconnectOnClose) {
             if (asyncLogging) {
-              Utility.asyncStepLogger("Reconnecting after " + retryStep + "s ...");
+              Utility.asyncStepLogger("Reconnecting after " + retryStep + "s");
             }
 
             socketState = socketStateType.CLOSED;
@@ -314,14 +319,14 @@
           }
         } else {
           if (asyncLogging) {
-            Utility.asyncStepLogger("Ping Response at\t" + new Date());
+            Utility.asyncStepLogger("Ping Response at (" + new Date() + ")");
           }
         }
       },
 
       registerDevice = function(isRetry) {
         if (asyncLogging) {
-          Utility.asyncStepLogger("Registering Device ...");
+          Utility.asyncStepLogger("Registering Device");
         }
 
         var content = {
@@ -335,7 +340,10 @@
           content.renew = true;
         }
 
-        socket.emit({type: asyncMessageType.DEVICE_REGISTER, content: content});
+        socket.emit({
+          type: asyncMessageType.DEVICE_REGISTER,
+          content: content
+        });
       },
 
       handleDeviceRegisterMessage = function(recievedPeerId) {
@@ -378,14 +386,17 @@
       registerServer = function() {
 
         if (asyncLogging) {
-          Utility.asyncStepLogger("Registering Server ...");
+          Utility.asyncStepLogger("Registering Server");
         }
 
         var content = {
           name: serverName
         };
 
-        socket.emit({type: asyncMessageType.SERVER_REGISTER, content: content});
+        socket.emit({
+          type: asyncMessageType.SERVER_REGISTER,
+          content: content
+        });
 
         registerServerTimeoutId = setTimeout(function() {
           if (!isServerRegister) {
@@ -415,7 +426,7 @@
           pushSendDataQueueHandler();
 
           if (asyncLogging) {
-            Utility.asyncStepLogger("Async is Ready ...");
+            Utility.asyncStepLogger("Async is Ready");
           }
 
         } else {
@@ -456,12 +467,11 @@
           if (ack) {
             for (var id in eventCallbacks[eventName])
               eventCallbacks[eventName][id](param, ack);
-            }
-          else {
+          } else {
             for (var id in eventCallbacks[eventName])
               eventCallbacks[eventName][id](param);
-            }
-          } catch (e) {
+          }
+        } catch (e) {
           fireEvent("error", {
             errorCode: 999,
             errorMessage: "Unknown ERROR!",
@@ -486,11 +496,11 @@
     }
 
     this.send = function(params, callback) {
-      var messageType = (typeof params.type === "number")
-        ? params.type
-        : (callback)
-          ? asyncMessageType.MESSAGE_SENDER_ACK_NEEDED
-          : asyncMessageType.MESSAGE;
+      var messageType = (typeof params.type === "number") ?
+        params.type :
+        (callback) ?
+        asyncMessageType.MESSAGE_SENDER_ACK_NEEDED :
+        asyncMessageType.MESSAGE;
 
       var socketData = {
         type: messageType,
