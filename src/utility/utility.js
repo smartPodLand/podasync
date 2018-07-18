@@ -195,7 +195,7 @@
      */
     this.asyncStepLogger = function(message) {
       if (typeof navigator == "undefined") {
-        console.log("\x1b[90m    ☰ \x1b[0m \x1b[90m%s\x1b[0m", message);
+        console.log("\x1b[90m    ☰ \x1b[0m\x1b[90m%s\x1b[0m", message);
       } else {
         console.log("%c   " + message, 'border-left: solid #08bbdb 10px; color: #08bbdb;');
       }
