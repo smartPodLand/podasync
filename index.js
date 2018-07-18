@@ -28,7 +28,7 @@ asyncClient.on("asyncReady", function() {
  */
 asyncClient.on("error", function(error) {
   switch (error.errorCode) {
-      // Socket Closed
+    // Socket Closed
     case 4005:
       clearInterval(sendMessageInterval);
       break;
@@ -47,8 +47,7 @@ asyncClient.on("message", function(msg, ack) {});
  * You can get async state changes here
  */
 asyncClient.on("stateChange", function(currentState) {
-  console.log(currentState);
-  switch (currentState) {
+  switch (currentState.socketState) {
     case 1:
       /**
        * Send Message Every 5 Seconds
