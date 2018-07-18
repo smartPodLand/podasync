@@ -177,7 +177,7 @@
 
           if (reconnectOnClose) {
             if (asyncLogging) {
-              Utility.asyncStepLogger("Reconnecting after " + retryStep + "s ...");
+              Utility.asyncStepLogger("Reconnecting after " + retryStep + "s");
             }
 
             socketState = socketStateType.CLOSED;
@@ -319,14 +319,14 @@
           }
         } else {
           if (asyncLogging) {
-            Utility.asyncStepLogger("Ping Response at\t" + new Date());
+            Utility.asyncStepLogger("Ping Response at (" + new Date().toUTCString() + ")");
           }
         }
       },
 
       registerDevice = function(isRetry) {
         if (asyncLogging) {
-          Utility.asyncStepLogger("Registering Device ...");
+          Utility.asyncStepLogger("Registering Device");
         }
 
         var content = {
@@ -386,7 +386,7 @@
       registerServer = function() {
 
         if (asyncLogging) {
-          Utility.asyncStepLogger("Registering Server ...");
+          Utility.asyncStepLogger("Registering Server");
         }
 
         var content = {
@@ -426,7 +426,7 @@
           pushSendDataQueueHandler();
 
           if (asyncLogging) {
-            Utility.asyncStepLogger("Async is Ready ...");
+            Utility.asyncStepLogger("Async is Ready");
           }
 
         } else {
