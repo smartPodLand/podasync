@@ -340,7 +340,7 @@
           content.renew = true;
         }
 
-        socket.emit({
+        pushSendData({
           type: asyncMessageType.DEVICE_REGISTER,
           content: content
         });
@@ -393,7 +393,7 @@
           name: serverName
         };
 
-        socket.emit({
+        pushSendData({
           type: asyncMessageType.SERVER_REGISTER,
           content: content
         });

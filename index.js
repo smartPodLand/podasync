@@ -41,12 +41,15 @@ asyncClient.on("error", function(error) {
 /**
  * You can handle received message here
  */
-asyncClient.on("message", function(msg, ack) {});
+asyncClient.on("message", function(msg, ack) {
+
+});
 
 /**
  * You can get async state changes here
  */
 asyncClient.on("stateChange", function(currentState) {
+  // console.log(currentState);
   switch (currentState.socketState) {
     case 1:
       /**

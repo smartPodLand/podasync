@@ -65,11 +65,10 @@
 
             lastReceivedMessageTimeoutId = setTimeout(function() {
               var currentDate = new Date();
-
-              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout + JSTimeLatency) {
+              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout - JSTimeLatency) {
                 socket.close();
               }
-            }, connectionCheckTimeout);
+            }, connectionCheckTimeout * 1.5);
           }
 
           socket.onclose = function(event) {
