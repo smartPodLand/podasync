@@ -8,7 +8,8 @@
      * @return {boolean}
      */
     this.isNode = function() {
-      return (typeof module !== 'undefined' && typeof module.exports != "undefined");
+      // return (typeof module !== 'undefined' && typeof module.exports != "undefined");
+      return (typeof global !== "undefined" && ({}).toString.call(global) === '[object global]');
     }
 
     /**
@@ -90,7 +91,7 @@
           break;
       }
 
-      if (typeof navigator == "undefined") {
+      if (typeof global !== "undefined" && ({}).toString.call(global) === '[object global]') {
         console.log("\n");
         console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
         console.log("\x1b[" + BgColor + "m\x1b[8m##################\x1b[0m\x1b[37m\x1b[" + BgColor + "m S O C K E T    S T A T U S \x1b[0m\x1b[" + BgColor + "m\x1b[8m##################\x1b[0m");
