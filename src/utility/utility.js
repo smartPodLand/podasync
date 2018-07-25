@@ -142,49 +142,50 @@
       } else {
         console.log("\n");
         console.log("%cS O C K E T    S T A T U S", 'background: ' + ColorCSS + '; padding: 10px 142px; font-weight: bold; font-size: 18px; color: #fff;');
-        console.log("%c\t\t\t\t\t\t\t\t\t\t", 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';border-right: solid 10px ' + ColorCSS);
-        console.log("%c   PEER ID\t\t %c" + peerId, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   DEVICE ID\t\t %c" + deviceId, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   IS SOCKET OPEN\t %c" + isSocketOpen, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   DEVICE REGISTER\t %c" + isDeviceRegister, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   SERVER REGISTER\t %c" + isServerRegister, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   SOCKET STATE\t %c" + socketState, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   CURRENT MESSAGE\t %c" + type, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #aa386d; font-weight: bold');
-        console.log("%c\n", 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS);
+        console.log("\n");
+        console.log("%c   PEER ID\t\t %c" + peerId, 'color: #444', 'color: #ffac28; font-weight: bold');
+        console.log("%c   DEVICE ID\t\t %c" + deviceId, 'color: #444', 'color: #ffac28; font-weight: bold');
+        console.log("%c   IS SOCKET OPEN\t %c" + isSocketOpen, 'color: #444', 'color: #ffac28; font-weight: bold');
+        console.log("%c   DEVICE REGISTER\t %c" + isDeviceRegister, 'color: #444', 'color: #ffac28; font-weight: bold');
+        console.log("%c   SERVER REGISTER\t %c" + isServerRegister, 'color: #444', 'color: #ffac28; font-weight: bold');
+        console.log("%c   SOCKET STATE\t\t %c" + socketState, 'color: #444', 'color: #ffac28; font-weight: bold');
+        console.log("%c   CURRENT MESSAGE\t %c" + type, 'color: #444', 'color: #aa386d; font-weight: bold');
+        console.log("\n");
 
         Object.keys(msg).forEach(function(key) {
           if (typeof msg[key] === 'object') {
-            console.log("%c \t-" + key, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #777');
+            console.log("%c \t-" + key, 'color: #777');
             Object.keys(msg[key]).forEach(function(k) {
-              console.log("%c \t  •" + k + " : %c" + msg[key][k], 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #777', 'color: #f23; font-weight: bold');
+              console.log("%c \t  •" + k + " : %c" + msg[key][k], 'color: #777', 'color: #f23; font-weight: bold');
             });
           } else {
-            console.log("%c \t•" + key + " : %c" + msg[key], 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #777', 'color: #f23; font-weight: bold');
+            console.log("%c \t•" + key + " : %c" + msg[key], 'color: #777', 'color: #f23; font-weight: bold');
           }
         });
 
-        console.log("%c\n", 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS);
+        console.log("\n");
 
         if (pushSendDataQueue.length > 0) {
-          console.log("%c   SEND QUEUE", 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444');
-          console.log("%c\n", 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS);
+          console.log("%c   SEND QUEUE", 'color: #444');
+          console.log("\n");
           Object.keys(pushSendDataQueue).forEach(function(key) {
             if (typeof pushSendDataQueue[key] === 'object') {
-              console.log("%c \t-" + key, 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #777');
+              console.log("%c \t-" + key, 'color: #777');
               Object.keys(pushSendDataQueue[key]).forEach(function(k) {
-                console.log("%c \t  •" + k + " : %c" +  JSON.stringify(pushSendDataQueue[key][k]), 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #777', 'color: #f23; font-weight: bold');
+                console.log("%c \t  •" + k + " : %c" +  JSON.stringify(pushSendDataQueue[key][k]), 'color: #777', 'color: #999; font-weight: bold');
               });
             } else {
-              console.log("%c \t•" + key + " : %c" + pushSendDataQueue[key], 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #777', 'color: #f23; font-weight: bold');
+              console.log("%c \t•" + key + " : %c" + pushSendDataQueue[key], 'color: #777', 'color: #999; font-weight: bold');
             }
           });
 
         } else {
-          console.log("%c   SEND QUEUE\t\t %cEmpty", 'padding-bottom: 8px;border-left: solid 10px ' + ColorCSS + ';color: #444', 'color: #000; font-weight: bold');
+          console.log("%c   SEND QUEUE\t\t %cEmpty", 'color: #444', 'color: #000; font-weight: bold');
         }
 
-        console.log("%c\t\t\t\t\t\t\t\t\t\t", 'padding-bottom: 6px;border-left: solid 10px ' + ColorCSS + ';border-right: solid 10px ' + ColorCSS);
-        console.log("%c\t\t\t\t\t\t\t\t\t\t", 'border-top: solid 10px ' + ColorCSS);
+        console.log("\n");
+        console.log("%c ", 'font-weight: bold; font-size: 3px; border-left: solid 570px ' + ColorCSS + ';');
+        console.log("\n");
       }
     }
 
@@ -197,7 +198,7 @@
       if (typeof navigator == "undefined") {
         console.log("\x1b[90m    ☰ \x1b[0m\x1b[90m%s\x1b[0m", message);
       } else {
-        console.log("%c   " + message, 'border-left: solid #08bbdb 10px; color: #08bbdb;');
+        console.log("%c   " + message, 'border-left: solid #666 10px; color: #666;');
       }
     }
   }
