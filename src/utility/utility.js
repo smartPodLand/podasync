@@ -185,7 +185,7 @@
         }
 
         console.log("\n");
-        console.log("%c ", 'font-weight: bold; font-size: 3px; border-left: solid 570px ' + ColorCSS + ';');
+        console.log("%c ", 'font-weight: bold; font-size: 3px; border-left: solid 540px ' + ColorCSS + ';');
         console.log("\n");
       }
     }
