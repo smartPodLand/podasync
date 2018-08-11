@@ -515,10 +515,10 @@
           callback && callback();
         }
 
-        socketData.content.messageId = messageId;
-        socketData.content.ttl = messageTtl;
       }
 
+      socketData.content.messageId = messageId;
+      socketData.content.ttl = messageTtl;
       pushSendData(socketData);
     }
 
