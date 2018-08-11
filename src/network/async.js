@@ -446,13 +446,11 @@
       },
 
       clearTimeouts = function() {
-        if (registerDeviceTimeoutId != undefined) {
-          clearTimeout(registerDeviceTimeoutId);
-        }
-
-        if (registerServerTimeoutId != undefined) {
-          clearTimeout(registerServerTimeoutId);
-        }
+        registerDeviceTimeoutId && clearTimeout(registerDeviceTimeoutId);
+        registerServerTimeoutId && clearTimeout(registerServerTimeoutId);
+        checkIfSocketHasOpennedTimeoutId && clearTimeout(checkIfSocketHasOpennedTimeoutId);
+        socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
+        socketReconnectCheck && clearTimeout(socketReconnectCheck);
       },
 
       pushSendDataQueueHandler = function() {
@@ -568,6 +566,7 @@
       isServerRegister = false;
       isDeviceRegister = false;
       isSocketOpen = false;
+      deviceId = undefined;
       pushSendDataQueue = [];
       ackCallback = {};
       clearTimeouts();
