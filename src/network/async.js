@@ -181,7 +181,7 @@
 
           if (reconnectOnClose) {
             if (asyncLogging) {
-              if (workerId != 0) {
+              if (workerId > 0) {
                 Utility.asyncStepLogger(workerId + "\t Reconnecting after " + retryStep + "s");
               } else {
                 Utility.asyncStepLogger("Reconnecting after " + retryStep + "s");
@@ -327,7 +327,7 @@
           }
         } else {
           if (asyncLogging) {
-            if (workerId != 0) {
+            if (workerId > 0) {
               Utility.asyncStepLogger(workerId + "\t Ping Response at (" + new Date() + ")");
             } else {
               Utility.asyncStepLogger("Ping Response at (" + new Date() + ")");
@@ -338,7 +338,7 @@
 
       registerDevice = function(isRetry) {
         if (asyncLogging) {
-          if (workerId != 0) {
+          if (workerId > 0) {
             Utility.asyncStepLogger(workerId + "\t Registering Device");
           } else {
             Utility.asyncStepLogger("Registering Device");
@@ -402,7 +402,7 @@
       registerServer = function() {
 
         if (asyncLogging) {
-          if (workerId != 0) {
+          if (workerId > 0) {
             Utility.asyncStepLogger(workerId + "\t Registering Server");
           } else {
             Utility.asyncStepLogger("Registering Server");
@@ -446,7 +446,7 @@
           pushSendDataQueueHandler();
 
           if (asyncLogging) {
-            if (workerId != 0) {
+            if (workerId > 0) {
               Utility.asyncStepLogger(workerId + "\t Async is Ready");
             } else {
               Utility.asyncStepLogger("Async is Ready");
