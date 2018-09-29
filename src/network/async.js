@@ -92,7 +92,10 @@
       false,
       onSendLogging = (params.asyncLogging && typeof params.asyncLogging.onMessageSend === "boolean") ?
       params.asyncLogging.onMessageSend :
-      false;
+      false,
+      workerId = (params.asyncLogging && typeof parseInt(params.asyncLogging.workerId) === "number") ?
+      params.asyncLogging.workerId :
+      0;
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
@@ -104,6 +107,7 @@
 
       asyncLogger = function(type, msg) {
         Utility.asyncLogger({
+          workerId: workerId,
           type: type,
           msg: msg,
           peerId: peerId,
@@ -177,7 +181,11 @@
 
           if (reconnectOnClose) {
             if (asyncLogging) {
-              Utility.asyncStepLogger("Reconnecting after " + retryStep + "s");
+              if (workerId != 0) {
+                Utility.asyncStepLogger(workerId + "\t Reconnecting after " + retryStep + "s");
+              } else {
+                Utility.asyncStepLogger("Reconnecting after " + retryStep + "s");
+              }
             }
 
             socketState = socketStateType.CLOSED;
@@ -319,14 +327,22 @@
           }
         } else {
           if (asyncLogging) {
-            Utility.asyncStepLogger("Ping Response at (" + new Date() + ")");
+            if (workerId != 0) {
+              Utility.asyncStepLogger(workerId + "\t Ping Response at (" + new Date() + ")");
+            } else {
+              Utility.asyncStepLogger("Ping Response at (" + new Date() + ")");
+            }
           }
         }
       },
 
       registerDevice = function(isRetry) {
         if (asyncLogging) {
-          Utility.asyncStepLogger("Registering Device");
+          if (workerId != 0) {
+            Utility.asyncStepLogger(workerId + "\t Registering Device");
+          } else {
+            Utility.asyncStepLogger("Registering Device");
+          }
         }
 
         var content = {
@@ -386,7 +402,11 @@
       registerServer = function() {
 
         if (asyncLogging) {
-          Utility.asyncStepLogger("Registering Server");
+          if (workerId != 0) {
+            Utility.asyncStepLogger(workerId + "\t Registering Server");
+          } else {
+            Utility.asyncStepLogger("Registering Server");
+          }
         }
 
         var content = {
@@ -426,7 +446,11 @@
           pushSendDataQueueHandler();
 
           if (asyncLogging) {
-            Utility.asyncStepLogger("Async is Ready");
+            if (workerId != 0) {
+              Utility.asyncStepLogger(workerId + "\t Async is Ready");
+            } else {
+              Utility.asyncStepLogger("Async is Ready");
+            }
           }
 
         } else {

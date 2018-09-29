@@ -42,9 +42,9 @@
         d = Math.floor(d / 16);
 
         return (
-          c == 'x'
-          ? r
-          : (r & 0x7 | 0x8)).toString(16);
+          c == 'x' ?
+          r :
+          (r & 0x7 | 0x8)).toString(16);
       });
       return uuid;
     };
@@ -64,6 +64,7 @@
         isServerRegister = params.isServerRegister,
         socketState = params.socketState,
         pushSendDataQueue = params.pushSendDataQueue,
+        workerId = params.workerId,
         BgColor;
 
       switch (type) {
@@ -98,6 +99,9 @@
         console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t\t\t\t\t\t\t      \x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " PEER ID\t\t", peerId);
+        if (workerId != 0) {
+          console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " WORKER ID\t\t", workerId);
+        }
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE ID\t\t", deviceId);
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " IS SOCKET OPEN\t", isSocketOpen);
         console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE REGISTER\t", isDeviceRegister);
@@ -173,7 +177,7 @@
             if (typeof pushSendDataQueue[key] === 'object') {
               console.log("%c \t-" + key, 'color: #777');
               Object.keys(pushSendDataQueue[key]).forEach(function(k) {
-                console.log("%c \t  •" + k + " : %c" +  JSON.stringify(pushSendDataQueue[key][k]), 'color: #777', 'color: #999; font-weight: bold');
+                console.log("%c \t  •" + k + " : %c" + JSON.stringify(pushSendDataQueue[key][k]), 'color: #777', 'color: #999; font-weight: bold');
               });
             } else {
               console.log("%c \t•" + key + " : %c" + pushSendDataQueue[key], 'color: #777', 'color: #999; font-weight: bold');
