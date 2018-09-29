@@ -2,8 +2,8 @@ var Async = require('./src/network/async.js');
 var params = {
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  deviceId: "3d943476a879dcf609f79a5ec736bedc", // {**REQUIRED**} Device ID Barzegar
-  reconnectOnClose: true, // auto connect to socket after socket close
+  deviceId: "94af0c8f381deeb7aa28a85c473641c1-zizi", // {**REQUIRED**} Device ID ZiZi
+  reconnectOnClose: true, // auto connect to socket after socket close,
   asyncLogging: {
     onFunction: true, // log main actions on console
     onMessageReceive: true, // log received messages on console
@@ -58,9 +58,9 @@ asyncClient.on("stateChange", function(currentState) {
       if (!sendMessageInterval) {
         sendMessageInterval = setInterval(function() {
           asyncClient.send({
-            type: 5,
+            type: 3,
             content: {
-              receivers: ['126833'],
+              receivers: ['140423'],
               content: "Hello!"
             }
           });

@@ -75,7 +75,7 @@
       oldPeerId,
       peerId = params.peerId,
       lastMessageId = 0,
-      messageTtl = params.messageTtl || 5000,
+      messageTtl = params.messageTtl || 86400,
       serverName = params.serverName || "oauth-wire",
       connectionRetryInterval = params.connectionRetryInterval || 5000,
       socketReconnectRetryInterval,
@@ -529,18 +529,18 @@
         content: params.content
       };
 
-      if (messageType === asyncMessageType.MESSAGE_SENDER_ACK_NEEDED || messageType === asyncMessageType.MESSAGE_ACK_NEEDED) {
-        lastMessageId += 1;
-        var messageId = lastMessageId;
+      lastMessageId += 1;
+      var messageId = lastMessageId;
 
+      if (messageType === asyncMessageType.MESSAGE_SENDER_ACK_NEEDED || messageType === asyncMessageType.MESSAGE_ACK_NEEDED) {
         ackCallback[messageId] = function() {
           callback && callback();
         }
-
       }
 
       socketData.content.messageId = messageId;
       socketData.content.ttl = messageTtl;
+
       pushSendData(socketData);
     }
 

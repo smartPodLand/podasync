@@ -4,9 +4,9 @@ var PODSocket = require('../src/network/socket.js');
 var Async = require('../src/network/async.js');
 
 var DEVICE_IDS = {
-  DEVICEID_1: "208bf7f8671eef0759bca69621835e3b", // Zamani
-  DEVICEID_2: "3d943476a879dcf609f79a5ec736bedc", // Barzegar
-  DEVICEID_3: "cbebc89039c39036045984eabd79ca27" // Felfeli
+  DEVICEID_1: "94af0c8f381deeb7aa28a85c473641c1-zizi", // ZiZi
+  DEVICEID_2: "94af0c8f381deeb7aa28a85c473641c1-jiji", // JiJi
+  DEVICEID_3: "94af0c8f381deeb7aa28a85c473641c1-fifi"  // FiFi
 }
 
 var params = {
@@ -15,9 +15,9 @@ var params = {
   deviceId: DEVICE_IDS.DEVICEID_1,
   reconnectOnClose: false,
   consoleLogging: {
-    // onFunction: true,
-    // onMessageReceive: true,
-    // onMessageSend: true
+    onFunction: true,
+    onMessageReceive: true,
+    onMessageSend: true
   }
 };
 
