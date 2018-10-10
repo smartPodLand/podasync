@@ -48,7 +48,7 @@
       CLOSED: 3 // The connection is closed or couldn't be opened.
     };
 
-    var appId = params.appId || "POD-Chat",
+    var appId = params.appId || "PodChat",
       deviceId = params.deviceId,
       eventCallbacks = {
         connect: {},
@@ -318,10 +318,13 @@
       handlePingMessage = function(msg) {
         if (msg.content) {
           if (deviceId === undefined) {
-            fireEvent("error", {
-              errorCode: 4003,
-              errorMessage: "Device Id is not present!"
-            });
+            // Temporary
+            deviceId = msg.content;
+            registerDevice();
+            // fireEvent("error", {
+            //   errorCode: 4003,
+            //   errorMessage: "Device Id is not present!"
+            // });
           } else {
             registerDevice();
           }
