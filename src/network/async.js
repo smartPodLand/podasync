@@ -26,28 +26,6 @@
 
     var Utility = new PodUtility();
 
-    var asyncMessageType = {
-      PING: 0,
-      SERVER_REGISTER: 1,
-      DEVICE_REGISTER: 2,
-      MESSAGE: 3,
-      MESSAGE_ACK_NEEDED: 4,
-      MESSAGE_SENDER_ACK_NEEDED: 5,
-      ACK: 6,
-      GET_REGISTERED_PEERS: 7,
-      PEER_REMOVED: -3,
-      REGISTER_QUEUE: -2,
-      NOT_REGISTERED: -1,
-      ERROR_MESSAGE: -99
-    };
-
-    var socketStateType = {
-      CONNECTING: 0, // The connection is not yet open.
-      OPEN: 1, // The connection is open and ready to communicate.
-      CLOSING: 2, // The connection is in the process of closing.
-      CLOSED: 3 // The connection is closed or couldn't be opened.
-    };
-
     var appId = params.appId || "PodChat",
       deviceId = params.deviceId,
       eventCallbacks = {
@@ -61,6 +39,26 @@
       },
       ackCallback = {},
       socket,
+      asyncMessageType = {
+        PING: 0,
+        SERVER_REGISTER: 1,
+        DEVICE_REGISTER: 2,
+        MESSAGE: 3,
+        MESSAGE_ACK_NEEDED: 4,
+        MESSAGE_SENDER_ACK_NEEDED: 5,
+        ACK: 6,
+        GET_REGISTERED_PEERS: 7,
+        PEER_REMOVED: -3,
+        REGISTER_QUEUE: -2,
+        NOT_REGISTERED: -1,
+        ERROR_MESSAGE: -99
+      },
+      socketStateType = {
+        CONNECTING: 0, // The connection is not yet open.
+        OPEN: 1, // The connection is open and ready to communicate.
+        CLOSING: 2, // The connection is in the process of closing.
+        CLOSED: 3 // The connection is closed or couldn't be opened.
+      },
       isNode = Utility.isNode(),
       isSocketOpen = false,
       isDeviceRegister = false,

@@ -2,8 +2,9 @@ var Async = require('./src/network/async.js');
 var params = {
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  deviceId: "94af0c8f381deeb7aa28a85c473641c1-zizi", // {**REQUIRED**} Device ID ZiZi
+  deviceId: "540c3871-35fe-42ef-9679-bd277940b410150947165557098", // {**REQUIRED**} Device ID ZiZi
   reconnectOnClose: true, // auto connect to socket after socket close,
+  connectionCheckTimeout: 10000,
   asyncLogging: {
     onFunction: true, // log main actions on console
     onMessageReceive: true, // log received messages on console
@@ -49,7 +50,6 @@ asyncClient.on("message", function(msg, ack) {
  * You can get async state changes here
  */
 asyncClient.on("stateChange", function(currentState) {
-  // console.log(currentState);
   switch (currentState.socketState) {
     case 1:
       /**
@@ -60,7 +60,7 @@ asyncClient.on("stateChange", function(currentState) {
           asyncClient.send({
             type: 3,
             content: {
-              receivers: ['140423'],
+              receivers: ['143417'],
               content: "Hello!"
             }
           });
@@ -72,7 +72,7 @@ asyncClient.on("stateChange", function(currentState) {
     case 0:
     case 2:
     case 3:
-      clearInterval(sendMessageInterval);
+      // clearInterval(sendMessageInterval);
       break;
 
   }
