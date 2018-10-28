@@ -50,7 +50,7 @@
                 onCloseHandler(null);
                 break;
             }
-          }, 2500);
+          }, 5000);
 
           socket.socket.onopen = function(event) {
             waitForSocketToConnect(function() {
@@ -68,6 +68,7 @@
             eventCallback["message"](messageData);
 
             lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
+            forceCloseSocketTimeout && clearTimeout(forceCloseSocketTimeout);
 
             lastReceivedMessageTime = new Date();
 
@@ -99,7 +100,7 @@
                   if (forceCloseSocket) {
                     socket.socket.close();
                   }
-                }, connectionCheckTimeout);
+                }, 4 * connectionCheckTimeout);
               }
             }, connectionCheckTimeout);
           }
