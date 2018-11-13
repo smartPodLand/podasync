@@ -83,6 +83,7 @@
                  * responses too, you are allowed to manually kill socket connection.
                  */
                 ping();
+
                 /**
                  * We set forceCloseSocket as true so that if your ping's response don't make it
                  * you close your socket
@@ -94,7 +95,7 @@
                  * for that being said, we send a ping message to be sure of
                  * socket connection's state. The ping message should have an
                  * ACK, if not, you're allowed to close your socket after
-                 * [connectionCheckTimeout] seconds
+                 * 4 * [connectionCheckTimeout] seconds
                  */
                 forceCloseSocketTimeout = setTimeout(function() {
                   if (forceCloseSocket) {
