@@ -2,7 +2,6 @@ var Async = require('./src/network/async.js');
 var params = {
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  // deviceId: "540c3871-35fe-42ef-9679-bd277940b410150947165557098", // {**REQUIRED**} Device ID ZiZi
   reconnectOnClose: true, // auto connect to socket after socket close,
   connectionCheckTimeout: 10000,
   asyncLogging: {

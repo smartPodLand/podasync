@@ -75,6 +75,9 @@
       lastMessageId = 0,
       messageTtl = params.messageTtl || 86400,
       serverName = params.serverName || "oauth-wire",
+      serverRegisteration = (typeof params.serverRegisteration === "boolean") ?
+      params.serverRegisteration :
+      true,
       connectionRetryInterval = params.connectionRetryInterval || 5000,
       socketReconnectRetryInterval,
       socketReconnectCheck,
@@ -316,13 +319,8 @@
       handlePingMessage = function(msg) {
         if (msg.content) {
           if (deviceId === undefined) {
-            // Temporary
             deviceId = msg.content;
             registerDevice();
-            // fireEvent("error", {
-            //   errorCode: 4003,
-            //   errorMessage: "Device Id is not present!"
-            // });
           } else {
             registerDevice();
           }
@@ -373,30 +371,57 @@
           peerId = recievedPeerId;
         }
 
-        if (isServerRegister && peerId === oldPeerId) {
+        /**
+         * If serverRegisteration == true we have to register
+         * on server then make async status ready
+         */
+        if (serverRegisteration) {
+          if (isServerRegister && peerId === oldPeerId) {
+            fireEvent("asyncReady");
+            isServerRegister = true;
+            pushSendDataQueueHandler();
+
+            socketState = socketStateType.OPEN;
+            fireEvent("stateChange", {
+              socketState: socketState,
+              timeUntilReconnect: 0,
+              deviceRegister: isDeviceRegister,
+              serverRegister: isServerRegister,
+              peerId: peerId
+            });
+          } else {
+            socketState = socketStateType.OPEN;
+            fireEvent("stateChange", {
+              socketState: socketState,
+              timeUntilReconnect: 0,
+              deviceRegister: isDeviceRegister,
+              serverRegister: isServerRegister,
+              peerId: peerId
+            });
+
+            registerServer();
+          }
+        } else {
           fireEvent("asyncReady");
-          isServerRegister = true;
+          isServerRegister = "Not Needed";
           pushSendDataQueueHandler();
 
-          socketState = socketStateType.OPEN;
-          fireEvent("stateChange", {
-            socketState: socketState,
-            timeUntilReconnect: 0,
-            deviceRegister: isDeviceRegister,
-            serverRegister: isServerRegister,
-            peerId: peerId
-          });
-        } else {
-          socketState = socketStateType.OPEN;
-          fireEvent("stateChange", {
-            socketState: socketState,
-            timeUntilReconnect: 0,
-            deviceRegister: isDeviceRegister,
-            serverRegister: isServerRegister,
-            peerId: peerId
-          });
+          if (asyncLogging) {
+            if (workerId > 0) {
+              Utility.asyncStepLogger(workerId + "\t Async is Ready");
+            } else {
+              Utility.asyncStepLogger("Async is Ready");
+            }
+          }
 
-          registerServer();
+          socketState = socketStateType.OPEN;
+          fireEvent("stateChange", {
+            socketState: socketState,
+            timeUntilReconnect: 0,
+            deviceRegister: isDeviceRegister,
+            serverRegister: isServerRegister,
+            peerId: peerId
+          });
         }
       },
 
