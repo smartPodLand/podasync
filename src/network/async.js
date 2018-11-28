@@ -325,7 +325,7 @@
             registerDevice();
           }
         } else {
-          if (asyncLogging) {
+          if (onReceiveLogging) {
             if (workerId > 0) {
               Utility.asyncStepLogger(workerId + "\t Ping Response at (" + new Date() + ")");
             } else {
