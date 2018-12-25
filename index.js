@@ -71,13 +71,12 @@ asyncClient.on("stateChange", function(currentState) {
     case 0:
     case 2:
     case 3:
-      // clearInterval(sendMessageInterval);
       break;
 
   }
 });
 
 asyncClient.on("disconnect", function(e) {
-  console.log("Socket Disconnected");
+  console.log("Socket has been disconnected!");
   console.log(e);
 });

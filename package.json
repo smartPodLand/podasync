@@ -28,6 +28,7 @@
   "homepage": "https://github.com/masoudmanson/pod-async#readme",
   "dependencies": {
     "bufferutil": "^4.0.0",
+    "isomorphic-ws": "^4.0.1",
     "utf-8-validate": "^5.0.1",
     "ws": "^4.1.0"
   },
