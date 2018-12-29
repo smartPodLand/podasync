@@ -20,7 +20,7 @@
       wsConnectionWaitTime = params.wsConnectionWaitTime || 500,
       connectionCheckTimeout = params.connectionCheckTimeout || 10000,
       eventCallback = {},
-      socket = {},
+      socket,
       waitForSocketToConnectTimeoutId,
       lastReceivedMessageTime,
       lastReceivedMessageTimeoutId,
@@ -41,25 +41,24 @@
 
       connect = function() {
         try {
-          socket.id = new Date().getTime();
-          socket.socket = new WebSocket(address, []);
+          socket = new WebSocket(address, []);
 
           socketRealTimeStatusInterval && clearInterval(socketRealTimeStatusInterval);
           socketRealTimeStatusInterval = setInterval(function() {
-            switch (socket.socket.readyState) {
+            switch (socket.readyState) {
               case 2:
                 onCloseHandler(null);
                 break;
             }
           }, 5000);
 
-          socket.socket.onopen = function(event) {
+          socket.onopen = function(event) {
             waitForSocketToConnect(function() {
               eventCallback["open"]();
             });
           }
 
-          socket.socket.onmessage = function(event) {
+          socket.onmessage = function(event) {
             /**
              * To avoid manually closing socket's connection
              */
@@ -100,18 +99,18 @@
                  */
                 forceCloseSocketTimeout = setTimeout(function() {
                   if (forceCloseSocket) {
-                    socket.socket.close();
+                    socket.close();
                   }
                 }, 4 * connectionCheckTimeout);
               }
             }, connectionCheckTimeout);
           }
 
-          socket.socket.onclose = function(event) {
+          socket.onclose = function(event) {
             onCloseHandler(event);
           }
 
-          socket.socket.onerror = function(event) {
+          socket.onerror = function(event) {
             eventCallback["error"](event);
           }
         } catch (error) {
@@ -138,11 +137,11 @@
       waitForSocketToConnect = function(callback) {
         waitForSocketToConnectTimeoutId && clearTimeout(waitForSocketToConnectTimeoutId);
 
-        if (socket.socket.readyState === 1) {
+        if (socket.readyState === 1) {
           callback();
         } else {
           waitForSocketToConnectTimeoutId = setTimeout(function() {
-            if (socket.socket.readyState === 1) {
+            if (socket.readyState === 1) {
               callback();
             } else {
               waitForSocketToConnect(callback);
@@ -176,8 +175,8 @@
             data.content = JSON.stringify(params.content);
           }
 
-          if (socket.socket.readyState === 1) {
-            socket.socket.send(JSON.stringify(data));
+          if (socket.readyState === 1) {
+            socket.send(JSON.stringify(data));
           }
         } catch (error) {
           eventCallback["customError"]({
@@ -205,7 +204,7 @@
     this.close = function() {
       lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
       lastSentMessageTimeoutId && clearTimeout(lastSentMessageTimeoutId);
-      socket.socket.close();
+      socket.close();
     }
 
     init();
