@@ -7,9 +7,9 @@
    */
 
   function Socket(params) {
-    
+
     if (typeof(WebSocket) === "undefined" && typeof(require) !== "undefined" && typeof(exports) !== "undefined") {
-      var WebSocket = require('isomorphic-ws');
+      WebSocket = require('isomorphic-ws');
     }
 
     /*******************************************************
