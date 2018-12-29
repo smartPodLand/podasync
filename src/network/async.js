@@ -81,7 +81,7 @@
       connectionRetryInterval = params.connectionRetryInterval || 5000,
       socketReconnectRetryInterval,
       socketReconnectCheck,
-      retryStep = 8,
+      retryStep = 10,
       reconnectOnClose = (typeof params.reconnectOnClose === "boolean") ?
       params.reconnectOnClose :
       true,
@@ -145,7 +145,7 @@
           socketReconnectCheck && clearTimeout(socketReconnectCheck);
 
           isSocketOpen = true;
-          retryStep = 8;
+          retryStep = 10;
 
           socketState = socketStateType.OPEN;
           fireEvent("stateChange", {
@@ -203,7 +203,7 @@
               socket.connect();
             }, 1000 * retryStep);
 
-            if (retryStep < 60)
+            if (retryStep < 50)
               retryStep *= 2;
 
             socketReconnectCheck && clearTimeout(socketReconnectCheck);
