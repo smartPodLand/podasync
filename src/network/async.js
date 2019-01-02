@@ -500,7 +500,6 @@
         registerDeviceTimeoutId && clearTimeout(registerDeviceTimeoutId);
         registerServerTimeoutId && clearTimeout(registerServerTimeoutId);
         checkIfSocketHasOpennedTimeoutId && clearTimeout(checkIfSocketHasOpennedTimeoutId);
-        socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
         socketReconnectCheck && clearTimeout(socketReconnectCheck);
       },
 
