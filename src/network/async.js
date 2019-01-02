@@ -255,9 +255,9 @@
 
         socket.on("error", function(error) {
           fireEvent("error", {
-            errorCode: error.target._closeCode,
-            errorMessage: error.message,
-            errorEvent: error.error
+            errorCode: "",
+            errorMessage: "",
+            errorEvent: error
           });
         });
       },
