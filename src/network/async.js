@@ -199,6 +199,8 @@
               peerId: peerId
             });
 
+            socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
+
             socketReconnectRetryInterval = setTimeout(function() {
               socket.connect();
             }, 1000 * retryStep);
@@ -640,7 +642,14 @@
       isDeviceRegister = false;
       isSocketOpen = false;
       clearTimeouts();
+
+      socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
       socket.close();
+
+      socketReconnectRetryInterval = setTimeout(function() {
+        retryStep = 4;
+        socket.connect();
+      }, 2000);
     }
 
     init();
