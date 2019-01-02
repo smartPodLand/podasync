@@ -49,6 +49,9 @@
               case 2:
                 onCloseHandler(null);
                 break;
+              case 3:
+                socketRealTimeStatusInterval && clearInterval(socketRealTimeStatusInterval);
+                break;
             }
           }, 5000);
 
