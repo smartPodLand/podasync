@@ -6,8 +6,8 @@ var params = {
   connectionCheckTimeout: 10000,
   asyncLogging: {
     onFunction: true, // log main actions on console
-    onMessageReceive: true, // log received messages on console
-    onMessageSend: true // log sent messaged on console
+    // onMessageReceive: true, // log received messages on console
+    // onMessageSend: true // log sent messaged on console
   }
 };
 
@@ -77,6 +77,5 @@ asyncClient.on("stateChange", function(currentState) {
 });
 
 asyncClient.on("disconnect", function(e) {
-  console.log("Socket has been disconnected!");
-  console.log(e);
+  console.log("Socket disconnected! \n", e);
 });
