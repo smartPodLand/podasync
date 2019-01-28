@@ -14,10 +14,12 @@
 
     var PodSocketClass,
       PodUtility,
+      PodActiveMQ,
       http;
 
     if (typeof(require) !== "undefined" && typeof(exports) !== "undefined") {
       PodSocketClass = require('./socket.js');
+      PodActiveMQ = require('./activemq.js');
       PodUtility = require('../utility/utility.js');
     } else {
       PodSocketClass = POD.Socket;
@@ -26,7 +28,8 @@
 
     var Utility = new PodUtility();
 
-    var appId = params.appId || "PodChat",
+    var protocol = params.protocol || "websocket",
+      appId = params.appId || "PodChat",
       deviceId = params.deviceId,
       eventCallbacks = {
         connect: {},
@@ -39,6 +42,7 @@
       },
       ackCallback = {},
       socket,
+      activemq,
       asyncMessageType = {
         PING: 0,
         SERVER_REGISTER: 1,
@@ -103,11 +107,20 @@
      *******************************************************/
 
     var init = function() {
-        initSocket();
+        switch (protocol) {
+          case 'websocket':
+            initSocket();
+            break;
+
+          case 'queue':
+            initActiveMQ();
+            break;
+        }
       },
 
       asyncLogger = function(type, msg) {
         Utility.asyncLogger({
+          protocol: protocol,
           workerId: workerId,
           type: type,
           msg: msg,
@@ -122,7 +135,6 @@
       },
 
       initSocket = function() {
-
         socket = new PodSocketClass({
           socketAddress: params.socketAddress,
           wsConnectionWaitTime: params.wsConnectionWaitTime,
@@ -208,24 +220,24 @@
             if (retryStep < 64)
               retryStep *= 2;
 
-            socketReconnectCheck && clearTimeout(socketReconnectCheck);
-
-            socketReconnectCheck = setTimeout(function() {
-              if (!isSocketOpen) {
-                fireEvent("error", {
-                  errorCode: 4001,
-                  errorMessage: "Can not open Socket!"
-                });
-
-                socketState = socketStateType.CLOSED;
-                fireEvent("stateChange", {
-                  socketState: socketState,
-                  deviceRegister: isDeviceRegister,
-                  serverRegister: isServerRegister,
-                  peerId: peerId
-                });
-              }
-            }, 65000);
+            // socketReconnectCheck && clearTimeout(socketReconnectCheck);
+            //
+            // socketReconnectCheck = setTimeout(function() {
+            //   if (!isSocketOpen) {
+            //     fireEvent("error", {
+            //       errorCode: 4001,
+            //       errorMessage: "Can not open Socket!"
+            //     });
+            //
+            //     socketState = socketStateType.CLOSED;
+            //     fireEvent("stateChange", {
+            //       socketState: socketState,
+            //       deviceRegister: isDeviceRegister,
+            //       serverRegister: isServerRegister,
+            //       peerId: peerId
+            //     });
+            //   }
+            // }, 65000);
 
           } else {
             socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
@@ -262,6 +274,48 @@
             errorEvent: error
           });
         });
+      },
+
+      initActiveMQ = function() {
+        activemq = new PodActiveMQ({
+          username: params.queueUsername,
+          password: params.queuePassword,
+          host: params.queueHost,
+          port: params.queuePort,
+          timeout: params.queueConnectionTimeout
+        });
+
+        activemq.on("init", function() {
+          fireEvent("asyncReady");
+
+          socketState = socketStateType.OPEN;
+          fireEvent("stateChange", {
+            queueState: socketState
+          });
+
+          pushSendDataQueueHandler();
+
+          activemq.subscribe({
+            destination: params.queueReceive,
+            ack: "client-individual"
+          }, function(message) {
+            handleSocketMessage(JSON.parse(message));
+            if (onReceiveLogging) {
+              asyncLogger("Receive", JSON.parse(message));
+            }
+          });
+
+        });
+
+        activemq.on("error", function(msg) {
+          fireEvent("error", msg);
+
+          socketState = socketStateType.CLOSED;
+
+          fireEvent("stateChange", {
+            queueState: socketState
+          });
+        })
       },
 
       handleSocketMessage = function(msg) {
@@ -491,10 +545,25 @@
         if (onSendLogging)
           asyncLogger("Send", msg);
 
-        if (socketState === socketStateType.OPEN) {
-          socket.emit(msg);
-        } else {
-          pushSendDataQueue.push(msg);
+        switch (protocol) {
+          case 'websocket':
+            if (socketState === socketStateType.OPEN) {
+              socket.emit(msg);
+            } else {
+              pushSendDataQueue.push(msg);
+            }
+            break;
+
+          case 'queue':
+            if (socketState === socketStateType.OPEN) {
+              activemq.sendMessage({
+                destination: params.queueSend,
+                message: msg
+              });
+            } else {
+              pushSendDataQueue.push(msg);
+            }
+            break;
         }
       },
 
@@ -597,19 +666,30 @@
     }
 
     this.close = function() {
+      oldPeerId = peerId;
       isDeviceRegister = false;
       isSocketOpen = false;
+      clearTimeouts();
 
-      socketState = socketStateType.CLOSED;
-      fireEvent("stateChange", {
-        socketState: socketState,
-        timeUntilReconnect: 0,
-        deviceRegister: isDeviceRegister,
-        serverRegister: isServerRegister,
-        peerId: peerId
-      });
+      switch (protocol) {
+        case 'websocket':
+          socketState = socketStateType.CLOSED;
+          fireEvent("stateChange", {
+            socketState: socketState,
+            timeUntilReconnect: 0,
+            deviceRegister: isDeviceRegister,
+            serverRegister: isServerRegister,
+            peerId: peerId
+          });
 
-      socket.close();
+          socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
+          socket.close();
+          break;
+
+        case 'queue':
+          activemq.disconnect();
+          break;
+      }
     }
 
     this.logout = function() {
@@ -623,6 +703,35 @@
       ackCallback = {};
       clearTimeouts();
 
+
+      switch (protocol) {
+        case 'websocket':
+          socketState = socketStateType.CLOSED;
+          fireEvent("stateChange", {
+            socketState: socketState,
+            timeUntilReconnect: 0,
+            deviceRegister: isDeviceRegister,
+            serverRegister: isServerRegister,
+            peerId: peerId
+          });
+
+          reconnectOnClose = false;
+
+          socket.close();
+          break;
+
+        case 'queue':
+          activemq.destroy();
+          break;
+      }
+    }
+
+    this.reconnectSocket = function() {
+      oldPeerId = peerId;
+      isDeviceRegister = false;
+      isSocketOpen = false;
+      clearTimeouts();
+
       socketState = socketStateType.CLOSED;
       fireEvent("stateChange", {
         socketState: socketState,
@@ -631,17 +740,6 @@
         serverRegister: isServerRegister,
         peerId: peerId
       });
-
-      reconnectOnClose = false;
-
-      socket.close();
-    }
-
-    this.reconnectSocket = function() {
-      oldPeerId = peerId;
-      isDeviceRegister = false;
-      isSocketOpen = false;
-      clearTimeouts();
 
       socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
       socket.close();

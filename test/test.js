@@ -1,15 +1,16 @@
 var assert = require('assert');
 var WebSocket = require('ws');
-var PODSocket = require('../src/network/socket.js');
+var PodSocket = require('../src/network/socket.js');
+var PodActiveMQ = require('../src/network/activemq.js');
 var Async = require('../src/network/async.js');
 
 var DEVICE_IDS = {
   DEVICEID_1: "94af0c8f381deeb7aa28a85c473641c1-zizi", // ZiZi
-  DEVICEID_2: "94af0c8f381deeb7aa28a85c473641c1-jiji", // JiJi
-  DEVICEID_3: "94af0c8f381deeb7aa28a85c473641c1-fifi"  // FiFi
+  DEVICEID_2: "94af0c8f381deeb7aa28a85c473641c1-jiji" // JiJi
 }
 
-var params = {
+var websocketParams = {
+  protocol: "websocket",
   socketAddress: "ws://172.16.106.26:8003/ws",
   serverName: "chat-server",
   deviceId: DEVICE_IDS.DEVICEID_1,
@@ -21,27 +22,41 @@ var params = {
   }
 };
 
-var params2 = Object.assign({}, params);
-var params3 = Object.assign({}, params);
+var websocketParams2 = Object.assign({}, websocketParams);
+websocketParams2.deviceId = DEVICE_IDS.DEVICEID_2;
 
-params2.deviceId = DEVICE_IDS.DEVICEID_2;
-params3.deviceId = DEVICE_IDS.DEVICEID_3;
+var queueParams = {
+  protocol: "queue",
+  queueHost: "172.16.0.248",
+  queuePort: "61613",
+  queueUsername: "root",
+  queuePassword: "zalzalak",
+  queueReceive: "queue-in-amjadi-stomp",
+  queueSend: "queue-out-amjadi-stomp",
+  queuePeerId: "7313836",
+  queueConnectionTimeout: 20000,
+  asyncLogging: {
+    onFunction: true,
+    onMessageReceive: true,
+    onMessageSend: true
+  }
+};
 
 /**
-* Websocket Protocol
-*/
+ * Websocket Protocol
+ */
 describe('Web Socket Protocol', function() {
   var client;
 
   beforeEach(() => {
-    client = new WebSocket(params.socketAddress, []);
+    client = new WebSocket(websocketParams.socketAddress, []);
   });
 
   afterEach(() => {
     client.close();
   });
 
-  it("Should Connect to " + params.socketAddress, function(done) {
+  it("Should Connect to " + websocketParams.socketAddress, function(done) {
     client.on("open", function() {
       assert.equal(client.readyState, 1);
       done();
@@ -82,13 +97,40 @@ describe('Web Socket Protocol', function() {
 });
 
 /**
-* POD Socket Class
-*/
+ * Websocket Protocol
+ */
+describe('ActiveMQ Protocol via STOMP', function() {
+  var client;
+
+  beforeEach(() => {
+    client = new PodActiveMQ({
+      username: queueParams.queueUsername,
+      password: queueParams.queuePassword,
+      host: queueParams.queueHost,
+      port: queueParams.queuePort,
+      timeout: queueParams.queueConnectionTimeout
+    });
+  });
+
+  afterEach(() => {
+    client.disconnect();
+  });
+
+  it("Should Connect to " + queueParams.queueHost + ":" + queueParams.queuePort, function(done) {
+    client.on("init", function() {
+      done();
+    });
+  });
+});
+
+/**
+ * POD Socket Class
+ */
 describe("POD Socket Class", function() {
   var socket;
 
   beforeEach(() => {
-    socket = new PODSocket(params);
+    socket = new PodSocket(websocketParams);
     socket.on("open", function() {});
     socket.on("message", function() {});
     socket.on("error", function() {});
@@ -114,7 +156,10 @@ describe("POD Socket Class", function() {
   it("Should Send Empty Message ({type:0, content:\"\"}) Through POD Socket Class", function(done) {
     socket.on("open", function() {
       try {
-        socket.emit({type: 0, content: ""});
+        socket.emit({
+          type: 0,
+          content: ""
+        });
         done();
       } catch (err) {
         done(err);
@@ -134,8 +179,8 @@ describe("POD Socket Class", function() {
 });
 
 /**
-* POD Async Class Connecting
-*/
+ * POD Async Class Connecting
+ */
 describe("POD Async Class Connecting", function() {
   this.timeout(5000);
 
@@ -144,8 +189,8 @@ describe("POD Async Class Connecting", function() {
     peerId;
 
   beforeEach(() => {
-    asyncClient1 = new Async(params);
-    asyncClient2 = new Async(params2);
+    asyncClient1 = new Async(websocketParams);
+    asyncClient2 = new Async(websocketParams2);
   });
 
   afterEach(() => {
@@ -170,8 +215,8 @@ describe("POD Async Class Connecting", function() {
 });
 
 /**
-* POD Async Sending & Receiving Type 3
-*/
+ * POD Async Sending & Receiving Type 3
+ */
 describe("POD Async Sending & Receiving Type 3", function() {
   this.timeout(5000);
 
@@ -181,8 +226,8 @@ describe("POD Async Sending & Receiving Type 3", function() {
     peerId2;
 
   beforeEach(() => {
-    asyncClient1 = new Async(params);
-    asyncClient2 = new Async(params2);
+    asyncClient1 = new Async(websocketParams);
+    asyncClient2 = new Async(websocketParams2);
   });
 
   afterEach(() => {
@@ -256,8 +301,8 @@ describe("POD Async Sending & Receiving Type 3", function() {
 });
 
 /**
-* POD Async Sending & Receiving Type 5
-*/
+ * POD Async Sending & Receiving Type 5
+ */
 describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() {
   this.timeout(50000);
 
@@ -267,8 +312,8 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() 
     peerId2;
 
   beforeEach(() => {
-    asyncClient1 = new Async(params);
-    asyncClient2 = new Async(params2);
+    asyncClient1 = new Async(websocketParams);
+    asyncClient2 = new Async(websocketParams2);
   });
 
   afterEach(() => {
@@ -301,8 +346,7 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() 
       };
     });
 
-    asyncClient2.on("message", function(msg) {
-    });
+    asyncClient2.on("message", function(msg) {});
 
     asyncClient1.on("message", function(msg) {
       if (msg.senderId == peerId2) {
@@ -313,8 +357,8 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED)", function() 
 });
 
 /**
-* POD Async Sending & Receiving Type 5
-*/
+ * POD Async Sending & Receiving Type 5
+ */
 describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED) And Invoking Callback Function", function() {
   this.timeout(5000);
 
@@ -324,8 +368,8 @@ describe("POD Async Sending & Receiving Type 5 (SENDER ACK NEEDED) And Invoking 
     peerId2;
 
   beforeEach(() => {
-    asyncClient1 = new Async(params);
-    asyncClient2 = new Async(params2);
+    asyncClient1 = new Async(websocketParams);
+    asyncClient2 = new Async(websocketParams2);
   });
 
   afterEach(() => {

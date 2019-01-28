@@ -65,6 +65,7 @@
         socketState = params.socketState,
         pushSendDataQueue = params.pushSendDataQueue,
         workerId = params.workerId,
+        protocol = params.protocol || "websocket",
         BgColor;
 
       switch (type) {
@@ -92,105 +93,200 @@
           break;
       }
 
-      if (typeof global !== "undefined" && ({}).toString.call(global) === '[object global]') {
-        console.log("\n");
-        console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
-        console.log("\x1b[" + BgColor + "m\x1b[8m##################\x1b[0m\x1b[37m\x1b[" + BgColor + "m S O C K E T    S T A T U S \x1b[0m\x1b[" + BgColor + "m\x1b[8m##################\x1b[0m");
-        console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t\t\t\t\t\t\t      \x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " PEER ID\t\t", peerId);
-        if (workerId > 0) {
-          console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " WORKER ID\t\t", workerId);
-        }
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE ID\t\t", deviceId);
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " IS SOCKET OPEN\t", isSocketOpen);
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE REGISTER\t", isDeviceRegister);
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " SERVER REGISTER\t", isServerRegister);
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " SOCKET STATE\t", socketState);
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[" + FgColor + "m%s\x1b[0m ", " CURRENT MESSAGE\t", type);
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
-
-        Object.keys(msg).forEach(function(key) {
-          if (typeof msg[key] === 'object') {
-            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m-\x1b[0m \x1b[35m%s\x1b[0m", key);
-            Object.keys(msg[key]).forEach(function(k) {
-              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t   \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", k, msg[key][k]);
-            });
-          } else {
-            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", key, msg[key]);
-          }
-        });
-
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
-
-        if (pushSendDataQueue.length > 0) {
-          console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m", " SEND QUEUE");
-          console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
-          Object.keys(pushSendDataQueue).forEach(function(key) {
-            if (typeof pushSendDataQueue[key] === 'object') {
-              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m-\x1b[0m \x1b[35m%s\x1b[0m", key);
-              Object.keys(pushSendDataQueue[key]).forEach(function(k) {
-                console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t   \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[36m%s\x1b[0m", k, JSON.stringify(pushSendDataQueue[key][k]));
-              });
-            } else {
-              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", key, pushSendDataQueue[key]);
+      switch (protocol) {
+        case "websocket":
+          if (typeof global !== "undefined" && ({}).toString.call(global) === '[object global]') {
+            console.log("\n");
+            console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
+            console.log("\x1b[" + BgColor + "m\x1b[8m##################\x1b[0m\x1b[37m\x1b[" + BgColor + "m S O C K E T    S T A T U S \x1b[0m\x1b[" + BgColor + "m\x1b[8m##################\x1b[0m");
+            console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t\t\t\t\t\t\t      \x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " PEER ID\t\t", peerId);
+            if (workerId > 0) {
+              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " WORKER ID\t\t", workerId);
             }
-          });
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE ID\t\t", deviceId);
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " IS SOCKET OPEN\t", isSocketOpen);
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " DEVICE REGISTER\t", isDeviceRegister);
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " SERVER REGISTER\t", isServerRegister);
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " SOCKET STATE\t", socketState);
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[" + FgColor + "m%s\x1b[0m ", " CURRENT MESSAGE\t", type);
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
 
-        } else {
-          console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m ", " SEND QUEUE\t\t", "Empty");
-        }
-
-        console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t\t\t\t\t\t\t      \x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
-        console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
-        console.log("\n");
-      } else {
-        console.log("\n");
-        console.log("%cS O C K E T    S T A T U S", 'background: ' + ColorCSS + '; padding: 10px 142px; font-weight: bold; font-size: 18px; color: #fff;');
-        console.log("\n");
-        console.log("%c   PEER ID\t\t %c" + peerId, 'color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   DEVICE ID\t\t %c" + deviceId, 'color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   IS SOCKET OPEN\t %c" + isSocketOpen, 'color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   DEVICE REGISTER\t %c" + isDeviceRegister, 'color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   SERVER REGISTER\t %c" + isServerRegister, 'color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   SOCKET STATE\t\t %c" + socketState, 'color: #444', 'color: #ffac28; font-weight: bold');
-        console.log("%c   CURRENT MESSAGE\t %c" + type, 'color: #444', 'color: #aa386d; font-weight: bold');
-        console.log("\n");
-
-        Object.keys(msg).forEach(function(key) {
-          if (typeof msg[key] === 'object') {
-            console.log("%c \t-" + key, 'color: #777');
-            Object.keys(msg[key]).forEach(function(k) {
-              console.log("%c \t  •" + k + " : %c" + msg[key][k], 'color: #777', 'color: #f23; font-weight: bold');
+            Object.keys(msg).forEach(function(key) {
+              if (typeof msg[key] === 'object') {
+                console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m-\x1b[0m \x1b[35m%s\x1b[0m", key);
+                Object.keys(msg[key]).forEach(function(k) {
+                  console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t   \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", k, msg[key][k]);
+                });
+              } else {
+                console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", key, msg[key]);
+              }
             });
-          } else {
-            console.log("%c \t•" + key + " : %c" + msg[key], 'color: #777', 'color: #f23; font-weight: bold');
-          }
-        });
 
-        console.log("\n");
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
 
-        if (pushSendDataQueue.length > 0) {
-          console.log("%c   SEND QUEUE", 'color: #444');
-          console.log("\n");
-          Object.keys(pushSendDataQueue).forEach(function(key) {
-            if (typeof pushSendDataQueue[key] === 'object') {
-              console.log("%c \t-" + key, 'color: #777');
-              Object.keys(pushSendDataQueue[key]).forEach(function(k) {
-                console.log("%c \t  •" + k + " : %c" + JSON.stringify(pushSendDataQueue[key][k]), 'color: #777', 'color: #999; font-weight: bold');
+            if (pushSendDataQueue.length > 0) {
+              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m", " SEND QUEUE");
+              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+              Object.keys(pushSendDataQueue).forEach(function(key) {
+                if (typeof pushSendDataQueue[key] === 'object') {
+                  console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m-\x1b[0m \x1b[35m%s\x1b[0m", key);
+                  Object.keys(pushSendDataQueue[key]).forEach(function(k) {
+                    console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t   \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[36m%s\x1b[0m", k, JSON.stringify(pushSendDataQueue[key][k]));
+                  });
+                } else {
+                  console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", key, pushSendDataQueue[key]);
+                }
               });
+
             } else {
-              console.log("%c \t•" + key + " : %c" + pushSendDataQueue[key], 'color: #777', 'color: #999; font-weight: bold');
+              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m ", " SEND QUEUE\t\t", "Empty");
             }
-          });
 
-        } else {
-          console.log("%c   SEND QUEUE\t\t %cEmpty", 'color: #444', 'color: #000; font-weight: bold');
-        }
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t\t\t\t\t\t\t      \x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+            console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
+            console.log("\n");
+          } else {
+            console.log("\n");
+            console.log("%cS O C K E T    S T A T U S", 'background: ' + ColorCSS + '; padding: 10px 142px; font-weight: bold; font-size: 18px; color: #fff;');
+            console.log("\n");
+            console.log("%c   PEER ID\t\t %c" + peerId, 'color: #444', 'color: #ffac28; font-weight: bold');
+            console.log("%c   DEVICE ID\t\t %c" + deviceId, 'color: #444', 'color: #ffac28; font-weight: bold');
+            console.log("%c   IS SOCKET OPEN\t %c" + isSocketOpen, 'color: #444', 'color: #ffac28; font-weight: bold');
+            console.log("%c   DEVICE REGISTER\t %c" + isDeviceRegister, 'color: #444', 'color: #ffac28; font-weight: bold');
+            console.log("%c   SERVER REGISTER\t %c" + isServerRegister, 'color: #444', 'color: #ffac28; font-weight: bold');
+            console.log("%c   SOCKET STATE\t\t %c" + socketState, 'color: #444', 'color: #ffac28; font-weight: bold');
+            console.log("%c   CURRENT MESSAGE\t %c" + type, 'color: #444', 'color: #aa386d; font-weight: bold');
+            console.log("\n");
 
-        console.log("\n");
-        console.log("%c ", 'font-weight: bold; font-size: 3px; border-left: solid 540px ' + ColorCSS + ';');
-        console.log("\n");
+            Object.keys(msg).forEach(function(key) {
+              if (typeof msg[key] === 'object') {
+                console.log("%c \t-" + key, 'color: #777');
+                Object.keys(msg[key]).forEach(function(k) {
+                  console.log("%c \t  •" + k + " : %c" + msg[key][k], 'color: #777', 'color: #f23; font-weight: bold');
+                });
+              } else {
+                console.log("%c \t•" + key + " : %c" + msg[key], 'color: #777', 'color: #f23; font-weight: bold');
+              }
+            });
+
+            console.log("\n");
+
+            if (pushSendDataQueue.length > 0) {
+              console.log("%c   SEND QUEUE", 'color: #444');
+              console.log("\n");
+              Object.keys(pushSendDataQueue).forEach(function(key) {
+                if (typeof pushSendDataQueue[key] === 'object') {
+                  console.log("%c \t-" + key, 'color: #777');
+                  Object.keys(pushSendDataQueue[key]).forEach(function(k) {
+                    console.log("%c \t  •" + k + " : %c" + JSON.stringify(pushSendDataQueue[key][k]), 'color: #777', 'color: #999; font-weight: bold');
+                  });
+                } else {
+                  console.log("%c \t•" + key + " : %c" + pushSendDataQueue[key], 'color: #777', 'color: #999; font-weight: bold');
+                }
+              });
+
+            } else {
+              console.log("%c   SEND QUEUE\t\t %cEmpty", 'color: #444', 'color: #000; font-weight: bold');
+            }
+
+            console.log("\n");
+            console.log("%c ", 'font-weight: bold; font-size: 3px; border-left: solid 540px ' + ColorCSS + ';');
+            console.log("\n");
+          }
+          break;
+
+        case "queue":
+          if (typeof global !== "undefined" && ({}).toString.call(global) === '[object global]') {
+            console.log("\n");
+            console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
+            console.log("\x1b[" + BgColor + "m\x1b[8m##################\x1b[0m\x1b[37m\x1b[" + BgColor + "m Q U E U E      S T A T U S \x1b[0m\x1b[" + BgColor + "m\x1b[8m##################\x1b[0m");
+            console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t\t\t\t\t\t\t      \x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m", " QUEUE STATE\t\t", socketState);
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[" + FgColor + "m%s\x1b[0m ", " CURRENT MESSAGE\t", type);
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+
+            Object.keys(msg).forEach(function(key) {
+              if (typeof msg[key] === 'object') {
+                console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m-\x1b[0m \x1b[35m%s\x1b[0m", key);
+                Object.keys(msg[key]).forEach(function(k) {
+                  console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t   \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", k, msg[key][k]);
+                });
+              } else {
+                console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", key, msg[key]);
+              }
+            });
+
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+
+            if (pushSendDataQueue.length > 0) {
+              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m", " SEND QUEUE");
+              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+              Object.keys(pushSendDataQueue).forEach(function(key) {
+                if (typeof pushSendDataQueue[key] === 'object') {
+                  console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m-\x1b[0m \x1b[35m%s\x1b[0m", key);
+                  Object.keys(pushSendDataQueue[key]).forEach(function(k) {
+                    console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t   \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[36m%s\x1b[0m", k, JSON.stringify(pushSendDataQueue[key][k]));
+                  });
+                } else {
+                  console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t \x1b[1m•\x1b[0m \x1b[35m%s\x1b[0m : \x1b[33m%s\x1b[0m", key, pushSendDataQueue[key]);
+                }
+              });
+
+            } else {
+              console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \x1b[2m%s\x1b[0m \x1b[1m%s\x1b[0m ", " SEND QUEUE\t\t", "Empty");
+            }
+
+            console.log("\x1b[" + BgColor + "m\x1b[8m##\x1b[0m \t\t\t\t\t\t\t      \x1b[" + BgColor + "m\x1b[8m##\x1b[0m");
+            console.log("\x1b[" + BgColor + "m\x1b[8m%s\x1b[0m", "################################################################");
+            console.log("\n");
+          } else {
+            console.log("\n");
+            console.log("%cQ U E U E      S T A T U S", 'background: ' + ColorCSS + '; padding: 10px 142px; font-weight: bold; font-size: 18px; color: #fff;');
+            console.log("\n");
+            console.log("%c   QUEUE STATE\t\t %c" + socketState, 'color: #444', 'color: #ffac28; font-weight: bold');
+            console.log("%c   CURRENT MESSAGE\t %c" + type, 'color: #444', 'color: #aa386d; font-weight: bold');
+            console.log("\n");
+
+            Object.keys(msg).forEach(function(key) {
+              if (typeof msg[key] === 'object') {
+                console.log("%c \t-" + key, 'color: #777');
+                Object.keys(msg[key]).forEach(function(k) {
+                  console.log("%c \t  •" + k + " : %c" + msg[key][k], 'color: #777', 'color: #f23; font-weight: bold');
+                });
+              } else {
+                console.log("%c \t•" + key + " : %c" + msg[key], 'color: #777', 'color: #f23; font-weight: bold');
+              }
+            });
+
+            console.log("\n");
+
+            if (pushSendDataQueue.length > 0) {
+              console.log("%c   SEND QUEUE", 'color: #444');
+              console.log("\n");
+              Object.keys(pushSendDataQueue).forEach(function(key) {
+                if (typeof pushSendDataQueue[key] === 'object') {
+                  console.log("%c \t-" + key, 'color: #777');
+                  Object.keys(pushSendDataQueue[key]).forEach(function(k) {
+                    console.log("%c \t  •" + k + " : %c" + JSON.stringify(pushSendDataQueue[key][k]), 'color: #777', 'color: #999; font-weight: bold');
+                  });
+                } else {
+                  console.log("%c \t•" + key + " : %c" + pushSendDataQueue[key], 'color: #777', 'color: #999; font-weight: bold');
+                }
+              });
+
+            } else {
+              console.log("%c   SEND QUEUE\t\t %cEmpty", 'color: #444', 'color: #000; font-weight: bold');
+            }
+
+            console.log("\n");
+            console.log("%c ", 'font-weight: bold; font-size: 3px; border-left: solid 540px ' + ColorCSS + ';');
+            console.log("\n");
+          }
+          break;
       }
     }
 

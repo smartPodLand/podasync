@@ -1,13 +1,13 @@
 var Async = require('./src/network/async.js');
 var params = {
-  socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
+  socketAddress: "ws://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   reconnectOnClose: true, // auto connect to socket after socket close,
   connectionCheckTimeout: 10000,
   asyncLogging: {
     onFunction: true, // log main actions on console
-    // onMessageReceive: true, // log received messages on console
-    // onMessageSend: true // log sent messaged on console
+    onMessageReceive: true, // log received messages on console
+    onMessageSend: true // log sent messaged on console
   }
 };
 
@@ -21,28 +21,34 @@ var asyncClient = new Async(params);
  */
 asyncClient.on("asyncReady", function() {
   PID = asyncClient.getPeerId();
+    /**
+     * Send Message Every 5 Seconds
+     */
+    if (!sendMessageInterval) {
+      sendMessageInterval = setInterval(function() {
+        asyncClient.send({
+          type: 3,
+          content: {
+            receivers: [7313836],
+            content: "Message at " + new Date()
+          }
+        });
+      }, 5000);
+    }
 });
 
 /**
  * Handle Async Error here
  */
 asyncClient.on("error", function(error) {
-  switch (error.errorCode) {
-    // Socket Closed
-    case 4005:
-      clearInterval(sendMessageInterval);
-      break;
-
-    default:
-      break;
-  }
+  console.error(error);
 });
 
 /**
  * You can handle received message here
  */
 asyncClient.on("message", function(msg, ack) {
-
+  // Received Messages
 });
 
 /**
@@ -51,21 +57,6 @@ asyncClient.on("message", function(msg, ack) {
 asyncClient.on("stateChange", function(currentState) {
   switch (currentState.socketState) {
     case 1:
-      /**
-       * Send Message Every 5 Seconds
-       */
-      if (!sendMessageInterval) {
-        sendMessageInterval = setInterval(function() {
-          asyncClient.send({
-            type: 3,
-            content: {
-              receivers: ['143417'],
-              content: "Hello!"
-            }
-          });
-        }, 5000);
-      }
-
       break;
 
     case 0:
@@ -77,5 +68,5 @@ asyncClient.on("stateChange", function(currentState) {
 });
 
 asyncClient.on("disconnect", function(e) {
-  console.log("Socket disconnected! \n", e);
+  console.log("Async disconnected! \n", e);
 });

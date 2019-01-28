@@ -39,6 +39,10 @@
 
       connect = function() {
         try {
+          if (socket && socket.readyState == 1) {
+            return;
+          }
+
           socket = new WebSocket(address, []);
 
           socketRealTimeStatusInterval && clearInterval(socketRealTimeStatusInterval);
