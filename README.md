@@ -4,60 +4,102 @@
 
 ## Code Example
 
-Create an Javascript file e.x `index.js` and put following code in it:
+First you have to require PodAsync in your project.
 
 ```javascript
 var Async = require('podasync');
+```
 
-/**
-* socketAddress: Socket Server Address
-* serverName: Chat Server Name
-* deviceId: Device ID
-*/
+To be able to connect to async server, you should set some parameters. `Websockets` and `ActiveMQ` protocols are currently supported.
+
+### Websocket protocol parameters
+
+```javascript
 var params = {
-  socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
-  serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  deviceId: "3d943476a879dcf609f79a5ec736bedc", // {**REQUIRED**} Device ID Barzegar
+  socketAddress: "ws://chat-sandbox.pod.land/ws",
+  serverName: "chat-server",
+  reconnectOnClose: true,
+  connectionCheckTimeout: 10000,
+  asyncLogging: {
+    onFunction: true,
+    onMessageReceive: true,
+    onMessageSend: true
+  }
 };
+```
 
+### ActiveMQ protocol parameters
+
+```javascript
+var params = {
+  protocol: "queue",
+  queueHost: "172.16.0.248",
+  queuePort: "61613",
+  queueUsername: "root",
+  queuePassword: "zalzalak",
+  queueReceive: "queue-in-amjadi-stomp",
+  queueSend: "queue-out-amjadi-stomp",
+  queueConnectionTimeout: 20000,
+  asyncLogging: {
+    onFunction: true, // log main actions on console
+    onMessageReceive: true, // log received messages on console
+    onMessageSend: true // log sent messaged on console
+  }
+};
+```
+
+After setting parameters you can make a new connection to Async server.
+
+```javascript
 var asyncClient = new Async(params);
+```
 
-/**
-* Write your code inside asyncReady() function
-*/
+### Async Ready Event
+
+After making a new connection, you should wait for asyncReady event to fire so you could be sure that the connection has been estabilished and you are ready to go
+
+```javascript
 asyncClient.on("asyncReady", function() {
-
-/**
-* A Custom Message To be Send Through DIRANA
-*/
-  var customMessage = {
-    type: 3,
-    content: {
-      receivers: ["receiver1", "receiver2", "..."],
-      content: "Hello Buddy!"
-    }
-  };
-
   /**
-  * Sending Message
+  * Write your code inside asyncReady() function
   */
-  asyncClient.send(customMessage);
-
-});
-
-
-/**
-* Listening to responses came from DIRANA
-*/
-asyncClient.on("message", function(msg, ack) {
-  console.log(msg);
 });
 ```
 
-To execute your code simple run following command in command line
+### Receive messages
 
-    cd /root_of_your_project
-    node index.js
+In order to receive messages from Async server, you could listen to `message` event.
+
+```javascript
+/**
+* Listening to responses came from DIRANA
+*/
+asyncClient.on("message", function(message, ack) {
+  console.log(message);
+});
+```
+
+### Send message
+
+To send a new message to Async server you can use `send()` function.
+
+```javascript
+/**
+* A Custom Message To be Send Through DIRANA
+*/
+var customMessage = {
+  type: 3,
+  content: {
+    receivers: ["receiver1", "receiver2", "..."],
+    content: "Hello Buddy!"
+  }
+};
+
+/**
+* Sending Message
+*/
+asyncClient.send(customMessage);
+```
 
 ## Motivation
 
