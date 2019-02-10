@@ -1,1 +1,1 @@
-var PodAsync = require('./src/network/async.js')
+window.PodAsync = require('./src/network/async.js')

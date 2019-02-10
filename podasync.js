@@ -22971,7 +22971,7 @@ exports.createContext = Script.createContext = function (context) {
 };
 
 },{}],157:[function(require,module,exports){
-var PodAsync = require('./src/network/async.js')
+window.PodAsync = require('./src/network/async.js')
 
 },{"./src/network/async.js":186}],158:[function(require,module,exports){
 (function (global){
@@ -27246,6 +27246,16 @@ module.exports = BufferWritable;
       connect();
     };
 
+    this.disconnect = function() {
+      client.disconnect();
+      client = null;
+    };
+
+    this.destroy = function() {
+      client.destroy();
+      client = null;
+    };
+
     this.connectionStatus = function() {
       return connectionStatus;
     }
@@ -27287,7 +27297,7 @@ module.exports = BufferWritable;
 
     var Utility = new PodUtility();
 
-    var protocolType = params.protocol || "websocket",
+    var protocol = params.protocol || "websocket",
       appId = params.appId || "PodChat",
       deviceId = params.deviceId,
       eventCallbacks = {
@@ -27366,7 +27376,7 @@ module.exports = BufferWritable;
      *******************************************************/
 
     var init = function() {
-        switch (protocolType) {
+        switch (protocol) {
           case 'websocket':
             initSocket();
             break;
@@ -27379,7 +27389,7 @@ module.exports = BufferWritable;
 
       asyncLogger = function(type, msg) {
         Utility.asyncLogger({
-          protocol: protocolType,
+          protocol: protocol,
           workerId: workerId,
           type: type,
           msg: msg,
@@ -27457,8 +27467,7 @@ module.exports = BufferWritable;
               if (workerId > 0) {
                 Utility.asyncStepLogger(workerId + "\t Reconnecting after " + retryStep + "s");
               } else {
-                // Utility.asyncStepLogger("Reconnecting after " + retryStep + "s");
-                console.log("Recoonecting after", retryStep, new Date());
+                Utility.asyncStepLogger("Reconnecting after " + retryStep + "s");
               }
             }
 
@@ -27474,7 +27483,6 @@ module.exports = BufferWritable;
             socketReconnectRetryInterval && clearTimeout(socketReconnectRetryInterval);
 
             socketReconnectRetryInterval = setTimeout(function() {
-              console.log("Socket.connect() called in async.js at", new Date());
               socket.connect();
             }, 1000 * retryStep);
 
@@ -27806,7 +27814,7 @@ module.exports = BufferWritable;
         if (onSendLogging)
           asyncLogger("Send", msg);
 
-        switch (protocolType) {
+        switch (protocol) {
           case 'websocket':
             if (socketState === socketStateType.OPEN) {
               socket.emit(msg);
@@ -27932,7 +27940,7 @@ module.exports = BufferWritable;
       isSocketOpen = false;
       clearTimeouts();
 
-      switch (protocolType) {
+      switch (protocol) {
         case 'websocket':
           socketState = socketStateType.CLOSED;
           fireEvent("stateChange", {
@@ -27948,10 +27956,9 @@ module.exports = BufferWritable;
           break;
 
         case 'queue':
-          client.disconnect();
+          activemq.disconnect();
           break;
       }
-
     }
 
     this.logout = function() {
@@ -27966,7 +27973,7 @@ module.exports = BufferWritable;
       clearTimeouts();
 
 
-      switch (protocolType) {
+      switch (protocol) {
         case 'websocket':
           socketState = socketStateType.CLOSED;
           fireEvent("stateChange", {
@@ -27983,7 +27990,7 @@ module.exports = BufferWritable;
           break;
 
         case 'queue':
-          client.destroy();
+          activemq.destroy();
           break;
       }
     }
