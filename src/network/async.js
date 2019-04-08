@@ -626,6 +626,10 @@
         content: params.content
       };
 
+      if (params.trackerId) {
+          socketData.trackerId = params.trackerId;
+      }
+
       lastMessageId += 1;
       var messageId = lastMessageId;
 
