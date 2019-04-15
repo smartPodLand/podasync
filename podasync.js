@@ -28023,6 +28023,8 @@ module.exports = BufferWritable;
       }, 2000);
     }
 
+    this.generateUUID = Utility.generateUUID;
+
     init();
   }
 
