@@ -10,7 +10,7 @@ First you have to require PodAsync in your project.
 var Async = require('podasync');
 ```
 
-To be able to connect to async server, you should set some parameters. `Websockets` and `ActiveMQ` protocols are currently supported.
+To be able to connect to async server, you should set some parameters. `Websockets`, `ActiveMQ` and `MQTT` protocols are currently supported.
 
 ### Websocket protocol parameters
 
@@ -35,8 +35,8 @@ var params = {
   protocol: "queue",
   queueHost: "172.16.0.248",
   queuePort: "61613",
-  queueUsername: "root",
-  queuePassword: "zalzalak",
+  queueUsername: "***",
+  queuePassword: "***",
   queueReceive: "queue-in-amjadi-stomp",
   queueSend: "queue-out-amjadi-stomp",
   queueConnectionTimeout: 20000,
@@ -45,6 +45,28 @@ var params = {
     onMessageReceive: true, // log received messages on console
     onMessageSend: true // log sent messaged on console
   }
+};
+```
+
+### MQTT parameters
+
+```javascript
+var params = {
+    protocol: 'mqtt',
+    mqttHost: '172.16.106.26',
+    mqttPort: '1883',
+    mqttUsername: '***',
+    mqttPassword: '***',
+    mqttConnectionTimeout: 20000,
+    mqttClientId: 1234,
+    mqttInputQueueName: "out/mqqttout",
+    mqttOutputQueueName: "async/chat-server",
+    peerId: 118401,
+    asyncLogging: {
+        onFunction: true, // log main actions on console
+        onMessageReceive: true, // log received messages on console
+        onMessageSend: true // log sent messaged on console
+    }
 };
 ```
 

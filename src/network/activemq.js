@@ -1,7 +1,7 @@
 (function() {
   /*
-   * Socket Module to connect and handle Socket functionalities
-   * @module Socket
+   * ActiveMQ Module to connect and handle ActiveMQ functionalities
+   * @module ActiveMQ
    *
    * @param {Object} params
    */

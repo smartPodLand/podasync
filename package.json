@@ -29,6 +29,7 @@
   "dependencies": {
     "bufferutil": "^4.0.0",
     "isomorphic-ws": "^4.0.1",
+    "mqtt": "^3.0.0",
     "stompit": "^0.26.0",
     "utf-8-validate": "^5.0.1",
     "ws": "^4.1.0"

@@ -2,6 +2,7 @@ var assert = require('assert');
 var WebSocket = require('ws');
 var PodSocket = require('../src/network/socket.js');
 var PodActiveMQ = require('../src/network/activemq.js');
+var PodMQTT = require('../src/network/mqtt.js');
 var Async = require('../src/network/async.js');
 
 var DEVICE_IDS = {
@@ -42,6 +43,23 @@ var queueParams = {
   }
 };
 
+var mqttParams = {
+    protocol: 'mqtt',
+    mqttHost: '172.16.106.26',
+    mqttPort: '1883',
+    mqttUsername: 'root',
+    mqttPassword: 'zalzalak',
+    mqttConnectionTimeout: 20000,
+    mqttClientId: 1234,
+    mqttInputQueueName: "out/mqqttout",
+    mqttOutputQueueName: "async/chat-server",
+    peerId: 118401,
+    asyncLogging: {
+        onFunction: true,
+        onMessageReceive: true,
+        onMessageSend: true
+    }
+};
 /**
  * Websocket Protocol
  */
@@ -97,7 +115,7 @@ describe('Web Socket Protocol', function() {
 });
 
 /**
- * Websocket Protocol
+ * ActiveMQ Protocol
  */
 describe('ActiveMQ Protocol via STOMP', function() {
   var client;
@@ -121,6 +139,45 @@ describe('ActiveMQ Protocol via STOMP', function() {
       done();
     });
   });
+});
+
+/**
+ * MQTT Protocol
+ */
+describe('MQTT Protocol', function() {
+    var client;
+
+    beforeEach(() => {
+        client = new PodMQTT({
+            keepalive: mqttParams.keepalive || 60,
+            reschedulePings: (typeof mqttParams.reschedulePings == 'boolean') ? mqttParams.reschedulePings : true,
+            clientId: mqttParams.mqttClientId.toString() || 'podmqtt_' + Math.random()
+                .toString(16)
+                .substr(2, 8),
+            protocolId: mqttParams.protocolId || 'MQTT',
+            protocolVersion: mqttParams.protocolVersion || 4,
+            clean: (typeof mqttParams.clean == 'boolean') ? mqttParams.clean : true,
+            reconnectPeriod: mqttParams.reconnectPeriod || 1000,
+            connectTimeout: mqttParams.connectTimeout || 30 * 1000,
+            username: mqttParams.mqttUsername,
+            password: mqttParams.mqttPassword,
+            resubscribe: (typeof mqttParams.resubscribe == 'boolean') ? mqttParams.resubscribe : true,
+            host: mqttParams.mqttHost,
+            port: mqttParams.mqttPort,
+            inputQueueName: mqttParams.mqttInputQueueName,
+            outputQueueName: mqttParams.mqttOutputQueueName
+        });
+});
+
+    afterEach(() => {
+        client.end();
+});
+
+    it("Should Connect to " + mqttParams.mqttHost + ":" + mqttParams.mqttPort, function(done) {
+        client.on("connect", function() {
+            done();
+        });
+    });
 });
 
 /**

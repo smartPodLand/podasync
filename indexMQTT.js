@@ -1,10 +1,15 @@
 var Async = require('./src/network/async.js');
 var params = {
-    // socketAddress: 'ws://chat-sandbox.pod.land/ws', // {**REQUIRED**} Socket Address
-    socketAddress: 'ws://172.16.106.26:8003/ws', // {**REQUIRED**} Socket Address
-    serverName: 'chat-server', // {**REQUIRED**} Server to to register on
-    reconnectOnClose: true, // auto connect to socket after socket close,
-    connectionCheckTimeout: 10000,
+    protocol: 'mqtt',
+    mqttHost: '172.16.106.26',
+    mqttPort: '1883',
+    mqttUsername: 'root',
+    mqttPassword: 'zalzalak',
+    mqttConnectionTimeout: 20000,
+    mqttClientId: 1234,
+    mqttInputQueueName: "out/mqqttout",
+    mqttOutputQueueName: "async/chat-server",
+    peerId: 118401,
     asyncLogging: {
         onFunction: true, // log main actions on console
         onMessageReceive: true, // log received messages on console
@@ -22,20 +27,6 @@ var asyncClient = new Async(params);
  */
 asyncClient.on('asyncReady', function() {
     PID = asyncClient.getPeerId();
-    /**
-     * Send Message Every 5 Seconds
-     */
-    if (!sendMessageInterval) {
-        sendMessageInterval = setInterval(function() {
-            asyncClient.send({
-                type: 3,
-                content: {
-                    receivers: [118401],
-                    content: 'Message at ' + new Date()
-                }
-            });
-        }, 5000);
-    }
 });
 
 /**
@@ -56,16 +47,8 @@ asyncClient.on('message', function(msg, ack) {
  * You can get async state changes here
  */
 asyncClient.on('stateChange', function(currentState) {
-    switch (currentState.socketState) {
-        case 1:
-            break;
-
-        case 0:
-        case 2:
-        case 3:
-            break;
-
-    }
+    // Status
+    console.log("Current MQTT status", currentState);
 });
 
 asyncClient.on('disconnect', function(e) {
