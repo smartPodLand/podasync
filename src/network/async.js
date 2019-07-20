@@ -858,7 +858,7 @@
     }
     else {
         if (!window.PodAsync) {
-            window.POD = {};
+            window.PodAsync = {};
         }
         window.PodAsync.Async = Async;
     }
