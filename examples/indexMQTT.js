@@ -1,4 +1,5 @@
-var Async = require('./src/network/async.js');
+var Async = require('../../src/network/async.js');
+
 var params = {
     protocol: 'mqtt',
     mqttHost: '172.16.106.26',

@@ -1,4 +1,5 @@
-var Async = require('./src/network/async.js');
+var Async = require('../../src/network/async.js');
+
 var params = {
   protocol: "queue",
   queueHost: "172.16.0.248",

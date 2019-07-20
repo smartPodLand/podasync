@@ -210,5 +210,12 @@
         init();
     }
 
-    module.exports = MQTT;
+    if (typeof module !== 'undefined' && typeof module.exports != "undefined") {
+        module.exports = MQTT;
+    } else {
+        if (!window.PodAsync) {
+            window.PodAsync = {};
+        }
+        window.PodAsync.MQTT = MQTT;
+    }
 })();

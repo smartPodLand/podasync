@@ -1,6 +1,6 @@
-var Async = require('./src/network/async.js');
+var Async = require('../../src/network/async.js');
+
 var params = {
-    // socketAddress: 'ws://chat-sandbox.pod.land/ws', // {**REQUIRED**} Socket Address
     socketAddress: 'ws://172.16.106.26:8003/ws', // {**REQUIRED**} Socket Address
     serverName: 'chat-server', // {**REQUIRED**} Server to to register on
     reconnectOnClose: true, // auto connect to socket after socket close,
