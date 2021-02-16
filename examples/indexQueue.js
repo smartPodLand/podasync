@@ -2,12 +2,12 @@ var Async = require('../src/network/async.js');
 
 var params = {
   protocol: "queue",
-  queueHost: "172.16.0.248",
+  queueHost: "******",
   queuePort: "61613",
-  queueUsername: "root",
-  queuePassword: "zalzalak",
-  queueReceive: "queue-in-amjadi-stomp",
-  queueSend: "queue-out-amjadi-stomp",
+  queueUsername: "****",
+  queuePassword: "*****",
+  queueReceive: "*****",
+  queueSend: "*****",
   queueConnectionTimeout: 20000,
   asyncLogging: {
     onFunction: true, // log main actions on console
