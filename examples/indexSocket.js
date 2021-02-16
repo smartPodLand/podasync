@@ -1,7 +1,7 @@
 var Async = require('../src/network/async.js');
 
 var params = {
-    socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
+    socketAddress: 'ws://*****:8003/ws', // {**REQUIRED**} Socket Address
     serverName: 'chat-server', // {**REQUIRED**} Server to to register on
     reconnectOnClose: true, // auto connect to socket after socket close,
     connectionCheckTimeout: 10000,
