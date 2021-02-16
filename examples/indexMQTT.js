@@ -2,14 +2,14 @@ var Async = require('../src/network/async.js');
 
 var params = {
     protocol: 'mqtt',
-    mqttHost: '172.16.106.26',
+    mqttHost: '*****',
     mqttPort: '1883',
-    mqttUsername: 'root',
-    mqttPassword: 'zalzalak',
+    mqttUsername: '*****',
+    mqttPassword: '*****',
     mqttConnectionTimeout: 20000,
     mqttClientId: 1234,
-    mqttInputQueueName: "out/mqqttout",
-    mqttOutputQueueName: "async/chat-server",
+    mqttInputQueueName: "****",
+    mqttOutputQueueName: "******",
     peerId: 118401,
     asyncLogging: {
         onFunction: true, // log main actions on console
